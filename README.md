@@ -510,7 +510,11 @@ npm run clean
 
 ## Documentation
 
+- [Protocol Verification Summary](./PROTOCOL_VERIFICATION_SUMMARY.md) - **Complete protocol verification and fixes** 🔍
 - [MSG Response Guide](./MSG_RESPONSE_GUIDE.md) - **Complete guide for MSG response generation** ⭐
+- [Composite Fields Guide](./COMPOSITE_FIELDS_GUIDE.md) - Guide for bit-packed and composite fields
+- [Composite Fields Audit](./COMPOSITE_FIELDS_AUDIT.md) - Complete audit of all composite fields
+- [Composite Fields Refactor](./REFACTOR_COMPOSITE_FIELDS.md) - Latest API improvements (getter/setter, nested objects)
 - [CTOS/STOC Implementation](./CTOS_STOC_IMPLEMENTATION.md) - Detailed protocol implementation
 - [MSG Implementation](./MSG_IMPLEMENTATION_SUMMARY.md) - MSG protocol details
 - [Full Payload API](./FULL_PAYLOAD_UPDATE.md) - `toFullPayload()` / `fromFullPayload()` documentation
