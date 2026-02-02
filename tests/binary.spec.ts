@@ -1,5 +1,8 @@
 import { BinaryField } from '../src/binary/binary-meta';
-import { fillBinaryFields, toBinaryFields } from '../src/binary/fill-binary-fields';
+import {
+  fillBinaryFields,
+  toBinaryFields,
+} from '../src/binary/fill-binary-fields';
 
 describe('Binary Serialization', () => {
   describe('Basic numeric types', () => {
@@ -196,7 +199,9 @@ describe('Binary Serialization', () => {
       expect(decodedName).toBe('Hello World');
 
       const shortNullIndex = shortNameBytes.indexOf(0);
-      const decodedShort = decoder.decode(shortNameBytes.slice(0, shortNullIndex));
+      const decodedShort = decoder.decode(
+        shortNameBytes.slice(0, shortNullIndex),
+      );
       expect(decodedShort).toBe('Test');
     });
 
@@ -436,19 +441,19 @@ describe('Binary Serialization', () => {
     it('should encode object arrays correctly', () => {
       const obj = new Container();
       obj.count = 3;
-      
+
       const item1 = new Item();
       item1.id = 1;
       item1.value = 100;
-      
+
       const item2 = new Item();
       item2.id = 2;
       item2.value = 200;
-      
+
       const item3 = new Item();
       item3.id = 3;
       item3.value = 300;
-      
+
       obj.items = [item1, item2, item3];
 
       const data = toBinaryFields(obj);
@@ -589,6 +594,56 @@ describe('Binary Serialization', () => {
 
       expect(data[0]).toBe(42);
       expect(data[1]).toBe(0); // Should be 0 for undefined
+    });
+
+    it('should throw error when data is too short', () => {
+      class RequiresTenBytes {
+        @BinaryField('u8', 0)
+        byte1: number;
+
+        @BinaryField('u32', 1)
+        dword: number;
+
+        @BinaryField('u8', 5)
+        byte2: number;
+      }
+
+      const shortData = new Uint8Array([1, 2, 3]); // Only 3 bytes, needs 6
+
+      const obj = new RequiresTenBytes();
+      expect(() => fillBinaryFields(obj, shortData)).toThrow('Data too short');
+    });
+
+    it('should throw error when string data is too short', () => {
+      class RequiresString {
+        @BinaryField('utf8', 0, 20)
+        name: string;
+      }
+
+      const shortData = new Uint8Array([1, 2, 3]); // Only 3 bytes, needs 20
+
+      const obj = new RequiresString();
+      expect(() => fillBinaryFields(obj, shortData)).toThrow('Data too short');
+    });
+
+    it('should throw error when object array data is too short', () => {
+      class Item {
+        @BinaryField('u8', 0)
+        id: number;
+
+        @BinaryField('u16', 1)
+        value: number;
+      }
+
+      class Container {
+        @BinaryField(() => Item, 0, 3)
+        items: Item[];
+      }
+
+      const shortData = new Uint8Array([1, 2, 3]); // Only 3 bytes, needs 3*3=9
+
+      const obj = new Container();
+      expect(() => fillBinaryFields(obj, shortData)).toThrow('Data too short');
     });
   });
 

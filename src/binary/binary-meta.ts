@@ -1,4 +1,4 @@
-import { Metadata } from "../metadata";
+import { Metadata } from '../metadata';
 
 export interface BinaryTypes {
   i8: number;
@@ -20,10 +20,18 @@ export interface BinaryFieldInfo {
   length?: Length;
 }
 
-export const BinaryField = (type: BinaryType, offset: Length, length?: Length) => {
+export const BinaryField = (
+  type: BinaryType,
+  offset: Length,
+  length?: Length,
+) => {
   // utf8/utf16 必须指定 length
   if ((type === 'utf8' || type === 'utf16') && length == null) {
     throw new Error(`String type ${type} requires length parameter`);
   }
-  return Metadata.set('binaryField', { type, offset, length }, 'binaryFieldKeys');
+  return Metadata.set(
+    'binaryField',
+    { type, offset, length },
+    'binaryFieldKeys',
+  );
 };

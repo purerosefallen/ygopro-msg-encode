@@ -38,7 +38,10 @@ interface FieldInfo {
 const getFieldInfos = (objOrClass: any) => {
   const fields = reflector
     .getArray('binaryFieldKeys', objOrClass)
-    .map((key) => ({ key, info: reflector.get('binaryField', objOrClass, key) }))
+    .map((key) => ({
+      key,
+      info: reflector.get('binaryField', objOrClass, key),
+    }))
     .filter((s) => s.info) as FieldInfo[];
 
   const staticInfos = fields.filter((s) => isStaticInfo(s.info));
@@ -61,6 +64,12 @@ export const fillBinaryFields = <T = any>(
   let totalSize = 0;
 
   const readValue = (type: string, offset: number): any => {
+    const typeSize = getTypeSize(type);
+    if (offset + typeSize > data.length) {
+      throw new Error(
+        `Data too short: need ${offset + typeSize} bytes, got ${data.length} bytes`,
+      );
+    }
     switch (type) {
       case 'i8':
         return view.getInt8(offset);
@@ -84,6 +93,11 @@ export const fillBinaryFields = <T = any>(
     offset: number,
     byteLength: number,
   ): string => {
+    if (offset + byteLength > data.length) {
+      throw new Error(
+        `Data too short: need ${offset + byteLength} bytes, got ${data.length} bytes`,
+      );
+    }
     const bytes = data.slice(offset, offset + byteLength);
 
     // 找到第一个 \0，提前截断
@@ -123,6 +137,11 @@ export const fillBinaryFields = <T = any>(
         const array = [];
         let currentOffset = offset;
         for (let i = 0; i < length; i++) {
+          if (currentOffset >= data.length) {
+            throw new Error(
+              `Data too short: need more bytes for object array at offset ${currentOffset}, got ${data.length} bytes`,
+            );
+          }
           const instance = new Constructor();
           const elementData = data.slice(currentOffset);
           const size = fillBinaryFields(instance, elementData, Constructor);
@@ -133,6 +152,11 @@ export const fillBinaryFields = <T = any>(
         totalSize = Math.max(totalSize, currentOffset);
       } else {
         // 单个对象
+        if (offset >= data.length) {
+          throw new Error(
+            `Data too short: need more bytes for object at offset ${offset}, got ${data.length} bytes`,
+          );
+        }
         const instance = new Constructor();
         const elementData = data.slice(offset);
         const size = fillBinaryFields(instance, elementData, Constructor);
