@@ -368,7 +368,11 @@ export class CardQuery {
     }
 
     if (flags & OcgcoreCommonConstants.QUERY_EQUIP_CARD) {
-      const card = this.equipCard || { controller: 0, location: 0, sequence: 0 };
+      const card = this.equipCard || {
+        controller: 0,
+        location: 0,
+        sequence: 0,
+      };
       view.setUint8(offset, card.controller);
       view.setUint8(offset + 1, card.location);
       view.setUint8(offset + 2, card.sequence);

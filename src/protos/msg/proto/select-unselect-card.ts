@@ -40,7 +40,11 @@ export class YGOProMsgSelectUnselectCard extends YGOProMsgBase {
   @BinaryField('u8', 5)
   selectableCount: number;
 
-  @BinaryField(() => YGOProMsgSelectUnselectCard_CardInfo, 6, (obj) => obj.selectableCount)
+  @BinaryField(
+    () => YGOProMsgSelectUnselectCard_CardInfo,
+    6,
+    (obj) => obj.selectableCount,
+  )
   selectableCards: YGOProMsgSelectUnselectCard_CardInfo[];
 
   @BinaryField('u8', (obj) => {
@@ -48,8 +52,12 @@ export class YGOProMsgSelectUnselectCard extends YGOProMsgBase {
   })
   unselectableCount: number;
 
-  @BinaryField(() => YGOProMsgSelectUnselectCard_CardInfo, (obj) => {
-    return 7 + obj.selectableCount * 8;
-  }, (obj) => obj.unselectableCount)
+  @BinaryField(
+    () => YGOProMsgSelectUnselectCard_CardInfo,
+    (obj) => {
+      return 7 + obj.selectableCount * 8;
+    },
+    (obj) => obj.unselectableCount,
+  )
   unselectableCards: YGOProMsgSelectUnselectCard_CardInfo[];
 }

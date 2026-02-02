@@ -45,7 +45,11 @@ export class YGOProMsgSelectBattleCmd extends YGOProMsgBase {
   @BinaryField('u8', 1)
   activatableCount: number;
 
-  @BinaryField(() => YGOProMsgSelectBattleCmd_ActivatableInfo, 2, (obj) => obj.activatableCount)
+  @BinaryField(
+    () => YGOProMsgSelectBattleCmd_ActivatableInfo,
+    2,
+    (obj) => obj.activatableCount,
+  )
   activatableCards: YGOProMsgSelectBattleCmd_ActivatableInfo[];
 
   @BinaryField('u8', (obj) => {
@@ -53,9 +57,13 @@ export class YGOProMsgSelectBattleCmd extends YGOProMsgBase {
   })
   attackableCount: number;
 
-  @BinaryField(() => YGOProMsgSelectBattleCmd_AttackableInfo, (obj) => {
-    return 3 + obj.activatableCount * 11;
-  }, (obj) => obj.attackableCount)
+  @BinaryField(
+    () => YGOProMsgSelectBattleCmd_AttackableInfo,
+    (obj) => {
+      return 3 + obj.activatableCount * 11;
+    },
+    (obj) => obj.attackableCount,
+  )
   attackableCards: YGOProMsgSelectBattleCmd_AttackableInfo[];
 
   @BinaryField('u8', (obj) => {

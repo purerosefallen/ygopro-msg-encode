@@ -166,7 +166,11 @@ describe('CardQuery', () => {
       const decoded = new CardQuery();
       decoded.fromPayload(data);
 
-      expect(decoded.equipCard).toEqual({ controller: 0, location: 4, sequence: 2 });
+      expect(decoded.equipCard).toEqual({
+        controller: 0,
+        location: 4,
+        sequence: 2,
+      });
     });
   });
 
@@ -265,7 +269,9 @@ describe('MSG_UPDATE_CARD', () => {
 
     // 表侧的卡片，对手可以看到所有信息
     expect(opponentView.card.code).toBe(89631139);
-    expect(opponentView.card.position).toBe(OcgcoreCommonConstants.POS_FACEUP_ATTACK);
+    expect(opponentView.card.position).toBe(
+      OcgcoreCommonConstants.POS_FACEUP_ATTACK,
+    );
     expect(opponentView.card.attack).toBe(3000);
   });
 
@@ -288,7 +294,9 @@ describe('MSG_UPDATE_CARD', () => {
 
     // 场上盖放的卡片，队友可以看到完整信息
     expect(teammateView.card.code).toBe(12345);
-    expect(teammateView.card.position).toBe(OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE);
+    expect(teammateView.card.position).toBe(
+      OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+    );
     expect(teammateView.card.defense).toBe(2000);
   });
 
@@ -300,8 +308,7 @@ describe('MSG_UPDATE_CARD', () => {
 
     msg.card = new CardQuery();
     msg.card.flags =
-      OcgcoreCommonConstants.QUERY_CODE |
-      OcgcoreCommonConstants.QUERY_POSITION;
+      OcgcoreCommonConstants.QUERY_CODE | OcgcoreCommonConstants.QUERY_POSITION;
     msg.card.code = 12345;
     msg.card.position = OcgcoreCommonConstants.POS_FACEDOWN; // 里侧除外
 
@@ -320,15 +327,16 @@ describe('MSG_UPDATE_CARD', () => {
 
     msg.card = new CardQuery();
     msg.card.flags =
-      OcgcoreCommonConstants.QUERY_CODE |
-      OcgcoreCommonConstants.QUERY_POSITION;
+      OcgcoreCommonConstants.QUERY_CODE | OcgcoreCommonConstants.QUERY_POSITION;
     msg.card.code = 12345;
     msg.card.position = OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE;
 
     // 控制者（玩家 0）可以看到完整数据
     const selfView = msg.playerView(0);
     expect(selfView.card.code).toBe(12345);
-    expect(selfView.card.position).toBe(OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE);
+    expect(selfView.card.position).toBe(
+      OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+    );
 
     // 对手（玩家 1）看不到盖放的卡
     const opponentView = msg.playerView(1);
@@ -349,8 +357,7 @@ describe('MSG_UPDATE_DATA', () => {
     // 卡片 1
     const card1 = new CardQuery();
     card1.flags =
-      OcgcoreCommonConstants.QUERY_CODE |
-      OcgcoreCommonConstants.QUERY_ATTACK;
+      OcgcoreCommonConstants.QUERY_CODE | OcgcoreCommonConstants.QUERY_ATTACK;
     card1.code = 89631139;
     card1.attack = 3000;
     msg.cards.push(card1);
@@ -364,8 +371,7 @@ describe('MSG_UPDATE_DATA', () => {
     // 卡片 3
     const card3 = new CardQuery();
     card3.flags =
-      OcgcoreCommonConstants.QUERY_CODE |
-      OcgcoreCommonConstants.QUERY_DEFENSE;
+      OcgcoreCommonConstants.QUERY_CODE | OcgcoreCommonConstants.QUERY_DEFENSE;
     card3.code = 55144522;
     card3.defense = 2000;
     msg.cards.push(card3);
@@ -439,8 +445,7 @@ describe('MSG_UPDATE_DATA', () => {
     // 卡片 3 - 表侧
     const card3 = new CardQuery();
     card3.flags =
-      OcgcoreCommonConstants.QUERY_CODE |
-      OcgcoreCommonConstants.QUERY_POSITION;
+      OcgcoreCommonConstants.QUERY_CODE | OcgcoreCommonConstants.QUERY_POSITION;
     card3.code = 67890;
     card3.position = OcgcoreCommonConstants.POS_FACEUP_DEFENSE;
     msg.cards.push(card3);
@@ -451,7 +456,9 @@ describe('MSG_UPDATE_DATA', () => {
 
     // 卡片 1 - 表侧，对手可见
     expect(opponentView.cards[0].code).toBe(89631139);
-    expect(opponentView.cards[0].position).toBe(OcgcoreCommonConstants.POS_FACEUP_ATTACK);
+    expect(opponentView.cards[0].position).toBe(
+      OcgcoreCommonConstants.POS_FACEUP_ATTACK,
+    );
     expect(opponentView.cards[0].attack).toBe(3000);
 
     // 卡片 2 - 盖放，对手不可见
@@ -462,7 +469,9 @@ describe('MSG_UPDATE_DATA', () => {
 
     // 卡片 3 - 表侧，对手可见
     expect(opponentView.cards[2].code).toBe(67890);
-    expect(opponentView.cards[2].position).toBe(OcgcoreCommonConstants.POS_FACEUP_DEFENSE);
+    expect(opponentView.cards[2].position).toBe(
+      OcgcoreCommonConstants.POS_FACEUP_DEFENSE,
+    );
   });
 
   it('should allow teammate to see facedown cards on field (MZONE/SZONE)', () => {
@@ -486,7 +495,9 @@ describe('MSG_UPDATE_DATA', () => {
 
     // 场上盖放的卡片，队友可以看到
     expect(teammateView.cards[0].code).toBe(12345);
-    expect(teammateView.cards[0].position).toBe(OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE);
+    expect(teammateView.cards[0].position).toBe(
+      OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+    );
     expect(teammateView.cards[0].defense).toBe(2000);
   });
 
@@ -499,8 +510,7 @@ describe('MSG_UPDATE_DATA', () => {
     // 非公开手牌
     const card1 = new CardQuery();
     card1.flags =
-      OcgcoreCommonConstants.QUERY_CODE |
-      OcgcoreCommonConstants.QUERY_POSITION;
+      OcgcoreCommonConstants.QUERY_CODE | OcgcoreCommonConstants.QUERY_POSITION;
     card1.code = 12345;
     card1.position = 0; // 非公开
     msg.cards.push(card1);
@@ -508,8 +518,7 @@ describe('MSG_UPDATE_DATA', () => {
     // 公开手牌
     const card2 = new CardQuery();
     card2.flags =
-      OcgcoreCommonConstants.QUERY_CODE |
-      OcgcoreCommonConstants.QUERY_POSITION;
+      OcgcoreCommonConstants.QUERY_CODE | OcgcoreCommonConstants.QUERY_POSITION;
     card2.code = 67890;
     card2.position = OcgcoreCommonConstants.POS_FACEUP; // 公开
     msg.cards.push(card2);
@@ -522,7 +531,9 @@ describe('MSG_UPDATE_DATA', () => {
 
     // 公开手牌，队友可以看到
     expect(teammateView.cards[1].code).toBe(67890);
-    expect(teammateView.cards[1].position).toBe(OcgcoreCommonConstants.POS_FACEUP);
+    expect(teammateView.cards[1].position).toBe(
+      OcgcoreCommonConstants.POS_FACEUP,
+    );
   });
 
   it('should use player field in playerView', () => {
@@ -533,8 +544,7 @@ describe('MSG_UPDATE_DATA', () => {
 
     const card = new CardQuery();
     card.flags =
-      OcgcoreCommonConstants.QUERY_CODE |
-      OcgcoreCommonConstants.QUERY_POSITION;
+      OcgcoreCommonConstants.QUERY_CODE | OcgcoreCommonConstants.QUERY_POSITION;
     card.code = 12345;
     card.position = OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE;
     msg.cards.push(card);
@@ -542,7 +552,9 @@ describe('MSG_UPDATE_DATA', () => {
     // 控制者（玩家 0）可以看到完整数据
     const selfView = msg.playerView(0);
     expect(selfView.cards[0].code).toBe(12345);
-    expect(selfView.cards[0].position).toBe(OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE);
+    expect(selfView.cards[0].position).toBe(
+      OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+    );
 
     // 对手（玩家 1）看不到盖放的卡
     const opponentView = msg.playerView(1);

@@ -40,7 +40,11 @@ export class YGOProMsgSelectSum extends YGOProMsgBase {
   @BinaryField('u8', 8)
   mustSelectCount: number;
 
-  @BinaryField(() => YGOProMsgSelectSum_CardInfo, 9, (obj) => obj.mustSelectCount)
+  @BinaryField(
+    () => YGOProMsgSelectSum_CardInfo,
+    9,
+    (obj) => obj.mustSelectCount,
+  )
   mustSelectCards: YGOProMsgSelectSum_CardInfo[];
 
   @BinaryField('u8', (obj) => {
@@ -48,8 +52,12 @@ export class YGOProMsgSelectSum extends YGOProMsgBase {
   })
   count: number;
 
-  @BinaryField(() => YGOProMsgSelectSum_CardInfo, (obj) => {
-    return 10 + obj.mustSelectCount * 11;
-  }, (obj) => obj.count)
+  @BinaryField(
+    () => YGOProMsgSelectSum_CardInfo,
+    (obj) => {
+      return 10 + obj.mustSelectCount * 11;
+    },
+    (obj) => obj.count,
+  )
   cards: YGOProMsgSelectSum_CardInfo[];
 }

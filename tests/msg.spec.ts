@@ -82,7 +82,7 @@ describe('YGOPro MSG Serialization', () => {
     it('should validate MSG identifier', () => {
       const data = new Uint8Array([99, 0, 0, 0, 0, 0]); // wrong identifier
       const msg = new YGOProMsgDamage();
-      
+
       expect(() => msg.fromPayload(data)).toThrow('MSG type mismatch');
     });
   });
@@ -186,15 +186,9 @@ describe('YGOPro MSG Serialization', () => {
 
   describe('MSG Registry', () => {
     it('should have correct identifier', () => {
-      expect(YGOProMsgWin.identifier).toBe(
-        OcgcoreCommonConstants.MSG_WIN,
-      );
-      expect(YGOProMsgHint.identifier).toBe(
-        OcgcoreCommonConstants.MSG_HINT,
-      );
-      expect(YGOProMsgDraw.identifier).toBe(
-        OcgcoreCommonConstants.MSG_DRAW,
-      );
+      expect(YGOProMsgWin.identifier).toBe(OcgcoreCommonConstants.MSG_WIN);
+      expect(YGOProMsgHint.identifier).toBe(OcgcoreCommonConstants.MSG_HINT);
+      expect(YGOProMsgDraw.identifier).toBe(OcgcoreCommonConstants.MSG_DRAW);
     });
 
     it('should retrieve class by identifier', () => {

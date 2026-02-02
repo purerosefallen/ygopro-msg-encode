@@ -16,7 +16,10 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
     // 对于每张盖放的卡片，清除查询数据（只保留长度字段，所有数据清零）
     if (copy.cards) {
       copy.cards = copy.cards.map((card) => {
-        if (card.position && (card.position & OcgcoreCommonConstants.POS_FACEDOWN)) {
+        if (
+          card.position &&
+          card.position & OcgcoreCommonConstants.POS_FACEDOWN
+        ) {
           // 盖放的卡片，清除所有查询数据
           const clearedCard = new CardQuery();
           clearedCard.flags = 0;
@@ -34,7 +37,7 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
     // - MZONE/SZONE：队友可以看到己方盖放的卡片（RefreshMzone/RefreshSzone 发给同队两个玩家）
     // - HAND：队友也看不到非公开的手牌（RefreshHand 只发给当前操作玩家完整数据）
     // - 其他公开区域（GRAVE 等）：所有人都能看到
-    
+
     if (
       this.location === OcgcoreScriptConstants.LOCATION_MZONE ||
       this.location === OcgcoreScriptConstants.LOCATION_SZONE
@@ -47,7 +50,10 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
       if (copy.cards) {
         copy.cards = copy.cards.map((card) => {
           // 只有表侧（公开）的手牌才能被看到
-          if (!card.position || !(card.position & OcgcoreCommonConstants.POS_FACEUP)) {
+          if (
+            !card.position ||
+            !(card.position & OcgcoreCommonConstants.POS_FACEUP)
+          ) {
             const clearedCard = new CardQuery();
             clearedCard.flags = 0;
             clearedCard.empty = true;

@@ -15,7 +15,10 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
   opponentView(): this {
     const copy = this.copy();
     // 如果卡片是盖放的，清除查询数据（只保留 flags = QUERY_CODE，code = 0）
-    if (copy.card?.position && (copy.card.position & OcgcoreCommonConstants.POS_FACEDOWN)) {
+    if (
+      copy.card?.position &&
+      copy.card.position & OcgcoreCommonConstants.POS_FACEDOWN
+    ) {
       const clearedCard = new CardQuery();
       clearedCard.flags = OcgcoreCommonConstants.QUERY_CODE;
       clearedCard.code = 0;
