@@ -4,12 +4,6 @@ import { PayloadBase } from '../../proto-base/payload-base';
 // Format: [length 2 bytes][identifier 1 byte][body]
 // This class only deals with [body]
 export class YGOProCtosBase extends PayloadBase {
-  get identifier(): number {
-    return (this.constructor as typeof YGOProCtosBase).identifier;
-  }
-
-  static identifier: number;
-
   /**
    * Serialize to full payload including header (length + identifier + body)
    * Format: [length 2 bytes LE][identifier 1 byte][body]
