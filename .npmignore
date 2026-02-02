@@ -1,0 +1,17 @@
+/install-npm.sh
+.git*
+/data
+/output
+/config.yaml
+.idea
+.dockerignore
+Dockerfile
+/src
+/coverage
+/tests
+/dist/tests
+/build.js
+
+/ygopro-scripts
+/ygopro-core
+/cards.cdb
