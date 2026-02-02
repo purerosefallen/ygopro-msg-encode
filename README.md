@@ -247,7 +247,78 @@ const msgProtocol = YGOProMessages.getInstanceFromPayload(bodyPayload);
 
 All YGOPro game messages are supported. See [MSG Protocol List](./CTOS_STOC_IMPLEMENTATION.md) for details.
 
+**Response Support**: 18 MSG protocols require client responses. This library provides a unified response generation API with support for index-based and semantic object selection. See [MSG Response Guide](./MSG_RESPONSE_GUIDE.md) for details.
+
 ## Advanced Usage
+
+### MSG Response Generation
+
+18 MSG protocols require client responses (e.g., card selection, yes/no, position selection). This library provides two powerful methods for generating responses:
+
+#### prepareResponse() - Generate Response Data
+
+```typescript
+import { 
+  YGOProMsgSelectBattlecmd, 
+  BattleCmdType,
+  IndexResponse 
+} from 'ygopro-msg-encode';
+
+// Parse received MSG
+const msg = new YGOProMsgSelectBattlecmd();
+msg.fromPayload(msgData);
+
+// Method 1: Index-based selection (explicit)
+const response = msg.prepareResponse(
+  BattleCmdType.ACTIVATE,
+  IndexResponse(0) // Select first option
+);
+
+// Method 2: Semantic object selection (intelligent)
+const response = msg.prepareResponse(
+  BattleCmdType.ACTIVATE,
+  { 
+    code: 12345678,  // Card code
+    location: 0x04,  // LOCATION_MZONE
+    sequence: 2,     // Sequence number
+    desc: 10         // Effect description (for multi-effect cards)
+  }
+);
+
+// Send response
+sendCtosResponse(response);
+```
+
+#### defaultResponse() - Conservative Default Behavior
+
+Some messages support "do nothing" or conservative default responses:
+
+```typescript
+import { YGOProMsgSelectChain } from 'ygopro-msg-encode';
+
+const msg = new YGOProMsgSelectChain();
+msg.fromPayload(msgData);
+
+// Get default response (if available)
+const defaultResp = msg.defaultResponse();
+if (defaultResp !== undefined) {
+  // Use safe default (e.g., "no" for yes/no, cancel for optional selections)
+  sendCtosResponse(defaultResp);
+} else {
+  // User input required
+  promptUserForResponse(msg);
+}
+```
+
+**Supported features:**
+- ✅ Index-based selection with `IndexResponse(index)`
+- ✅ Semantic object selection by card properties
+- ✅ Partial matching (match only specified fields)
+- ✅ Conservative default responses when available
+- ✅ Automatic error detection (invalid index, card not found)
+- ✅ Type-safe enums for command types
+
+**See [MSG Response Guide](./MSG_RESPONSE_GUIDE.md) for complete documentation.**
 
 ### Special Protocols
 
@@ -439,6 +510,7 @@ npm run clean
 
 ## Documentation
 
+- [MSG Response Guide](./MSG_RESPONSE_GUIDE.md) - **Complete guide for MSG response generation** ⭐
 - [CTOS/STOC Implementation](./CTOS_STOC_IMPLEMENTATION.md) - Detailed protocol implementation
 - [MSG Implementation](./MSG_IMPLEMENTATION_SUMMARY.md) - MSG protocol details
 - [Full Payload API](./FULL_PAYLOAD_UPDATE.md) - `toFullPayload()` / `fromFullPayload()` documentation

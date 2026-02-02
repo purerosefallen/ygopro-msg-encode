@@ -12,7 +12,7 @@ export class YGOProMsgAnnounceCard extends YGOProMsgResponseBase {
   count: number;
 
   @BinaryField('i32', 2, (obj) => obj.count)
-  cards: number[];
+  opcodes: number[];
 
   prepareResponse(cardCode: number) {
     const buffer = new Uint8Array(4);
