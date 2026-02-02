@@ -45,6 +45,7 @@ import {
   YGOProMsgPosChange,
   YGOProMsgRandomSelected,
   YGOProMsgRecover,
+  YGOProMsgReloadField,
   YGOProMsgRemoveCounter,
   YGOProMsgResetTime,
   YGOProMsgRetry,
@@ -72,6 +73,7 @@ import {
   YGOProMsgSortCard,
   YGOProMsgSpSummoned,
   YGOProMsgSpSummoning,
+  YGOProMsgStart,
   YGOProMsgSummoned,
   YGOProMsgSummoning,
   YGOProMsgSwap,
@@ -80,6 +82,8 @@ import {
   YGOProMsgTossCoin,
   YGOProMsgTossDice,
   YGOProMsgUpdateCard,
+  YGOProMsgUpdateData,
+  YGOProMsgWaiting,
   YGOProMsgWin,
 } from './proto';
 
@@ -165,3 +169,7 @@ YGOProMessages.register(YGOProMsgPlayerHint);
 YGOProMessages.register(YGOProMsgMatchKill);
 YGOProMessages.register(YGOProMsgResetTime);
 YGOProMessages.register(YGOProMsgUpdateCard);
+YGOProMessages.register(YGOProMsgWaiting);
+YGOProMessages.register(YGOProMsgStart);
+YGOProMessages.register(YGOProMsgUpdateData);
+YGOProMessages.register(YGOProMsgReloadField);
