@@ -1,4 +1,167 @@
 import { RegistryBase } from '../../proto-base/registry-base';
 import { YGOProMsgBase } from './base';
+import {
+  YGOProMsgAddCounter,
+  YGOProMsgAnnounceAttrib,
+  YGOProMsgAnnounceCard,
+  YGOProMsgAnnounceNumber,
+  YGOProMsgAnnounceRace,
+  YGOProMsgAttack,
+  YGOProMsgAttackDisabled,
+  YGOProMsgBattle,
+  YGOProMsgBecomeTarget,
+  YGOProMsgCancelTarget,
+  YGOProMsgCardHint,
+  YGOProMsgCardTarget,
+  YGOProMsgChainDisabled,
+  YGOProMsgChainEnd,
+  YGOProMsgChainNegated,
+  YGOProMsgChainSolved,
+  YGOProMsgChainSolving,
+  YGOProMsgChained,
+  YGOProMsgChaining,
+  YGOProMsgConfirmCards,
+  YGOProMsgConfirmDeckTop,
+  YGOProMsgConfirmExtraTop,
+  YGOProMsgDamage,
+  YGOProMsgDamageStepEnd,
+  YGOProMsgDamageStepStart,
+  YGOProMsgDeckTop,
+  YGOProMsgDraw,
+  YGOProMsgEquip,
+  YGOProMsgFieldDisabled,
+  YGOProMsgFlipSummoned,
+  YGOProMsgFlipSummoning,
+  YGOProMsgHandRes,
+  YGOProMsgHint,
+  YGOProMsgLpUpdate,
+  YGOProMsgMatchKill,
+  YGOProMsgMissedEffect,
+  YGOProMsgMove,
+  YGOProMsgNewPhase,
+  YGOProMsgNewTurn,
+  YGOProMsgPayLpCost,
+  YGOProMsgPlayerHint,
+  YGOProMsgPosChange,
+  YGOProMsgRandomSelected,
+  YGOProMsgRecover,
+  YGOProMsgRemoveCounter,
+  YGOProMsgResetTime,
+  YGOProMsgRetry,
+  YGOProMsgReverseDeck,
+  YGOProMsgRockPaperScissors,
+  YGOProMsgSelectBattleCmd,
+  YGOProMsgSelectCard,
+  YGOProMsgSelectChain,
+  YGOProMsgSelectCounter,
+  YGOProMsgSelectDisField,
+  YGOProMsgSelectEffectYn,
+  YGOProMsgSelectIdleCmd,
+  YGOProMsgSelectOption,
+  YGOProMsgSelectPlace,
+  YGOProMsgSelectPosition,
+  YGOProMsgSelectSum,
+  YGOProMsgSelectTribute,
+  YGOProMsgSelectUnselectCard,
+  YGOProMsgSelectYesNo,
+  YGOProMsgSet,
+  YGOProMsgShuffleDeck,
+  YGOProMsgShuffleExtra,
+  YGOProMsgShuffleHand,
+  YGOProMsgShuffleSetCard,
+  YGOProMsgSortCard,
+  YGOProMsgSpSummoned,
+  YGOProMsgSpSummoning,
+  YGOProMsgSummoned,
+  YGOProMsgSummoning,
+  YGOProMsgSwap,
+  YGOProMsgSwapGraveDeck,
+  YGOProMsgTagSwap,
+  YGOProMsgTossCoin,
+  YGOProMsgTossDice,
+  YGOProMsgUpdateCard,
+  YGOProMsgWin,
+} from './proto';
 
 export const YGOProMessages = new RegistryBase(YGOProMsgBase);
+
+YGOProMessages.register(YGOProMsgRetry);
+YGOProMessages.register(YGOProMsgHint);
+YGOProMessages.register(YGOProMsgWin);
+YGOProMessages.register(YGOProMsgSelectBattleCmd);
+YGOProMessages.register(YGOProMsgSelectIdleCmd);
+YGOProMessages.register(YGOProMsgSelectEffectYn);
+YGOProMessages.register(YGOProMsgSelectYesNo);
+YGOProMessages.register(YGOProMsgSelectOption);
+YGOProMessages.register(YGOProMsgSelectCard);
+YGOProMessages.register(YGOProMsgSelectChain);
+YGOProMessages.register(YGOProMsgSelectPlace);
+YGOProMessages.register(YGOProMsgSelectPosition);
+YGOProMessages.register(YGOProMsgSelectTribute);
+YGOProMessages.register(YGOProMsgSelectCounter);
+YGOProMessages.register(YGOProMsgSelectSum);
+YGOProMessages.register(YGOProMsgSelectDisField);
+YGOProMessages.register(YGOProMsgSortCard);
+YGOProMessages.register(YGOProMsgSelectUnselectCard);
+YGOProMessages.register(YGOProMsgConfirmDeckTop);
+YGOProMessages.register(YGOProMsgConfirmCards);
+YGOProMessages.register(YGOProMsgShuffleDeck);
+YGOProMessages.register(YGOProMsgShuffleHand);
+YGOProMessages.register(YGOProMsgSwapGraveDeck);
+YGOProMessages.register(YGOProMsgShuffleExtra);
+YGOProMessages.register(YGOProMsgShuffleSetCard);
+YGOProMessages.register(YGOProMsgReverseDeck);
+YGOProMessages.register(YGOProMsgDeckTop);
+YGOProMessages.register(YGOProMsgNewTurn);
+YGOProMessages.register(YGOProMsgNewPhase);
+YGOProMessages.register(YGOProMsgConfirmExtraTop);
+YGOProMessages.register(YGOProMsgMove);
+YGOProMessages.register(YGOProMsgPosChange);
+YGOProMessages.register(YGOProMsgSet);
+YGOProMessages.register(YGOProMsgSwap);
+YGOProMessages.register(YGOProMsgFieldDisabled);
+YGOProMessages.register(YGOProMsgSummoning);
+YGOProMessages.register(YGOProMsgSummoned);
+YGOProMessages.register(YGOProMsgSpSummoning);
+YGOProMessages.register(YGOProMsgSpSummoned);
+YGOProMessages.register(YGOProMsgFlipSummoning);
+YGOProMessages.register(YGOProMsgFlipSummoned);
+YGOProMessages.register(YGOProMsgChaining);
+YGOProMessages.register(YGOProMsgChained);
+YGOProMessages.register(YGOProMsgChainSolving);
+YGOProMessages.register(YGOProMsgChainSolved);
+YGOProMessages.register(YGOProMsgChainEnd);
+YGOProMessages.register(YGOProMsgChainNegated);
+YGOProMessages.register(YGOProMsgChainDisabled);
+YGOProMessages.register(YGOProMsgRandomSelected);
+YGOProMessages.register(YGOProMsgBecomeTarget);
+YGOProMessages.register(YGOProMsgDraw);
+YGOProMessages.register(YGOProMsgDamage);
+YGOProMessages.register(YGOProMsgRecover);
+YGOProMessages.register(YGOProMsgEquip);
+YGOProMessages.register(YGOProMsgLpUpdate);
+YGOProMessages.register(YGOProMsgCardTarget);
+YGOProMessages.register(YGOProMsgCancelTarget);
+YGOProMessages.register(YGOProMsgPayLpCost);
+YGOProMessages.register(YGOProMsgAddCounter);
+YGOProMessages.register(YGOProMsgRemoveCounter);
+YGOProMessages.register(YGOProMsgAttack);
+YGOProMessages.register(YGOProMsgBattle);
+YGOProMessages.register(YGOProMsgAttackDisabled);
+YGOProMessages.register(YGOProMsgDamageStepStart);
+YGOProMessages.register(YGOProMsgDamageStepEnd);
+YGOProMessages.register(YGOProMsgMissedEffect);
+YGOProMessages.register(YGOProMsgTossCoin);
+YGOProMessages.register(YGOProMsgTossDice);
+YGOProMessages.register(YGOProMsgRockPaperScissors);
+YGOProMessages.register(YGOProMsgHandRes);
+YGOProMessages.register(YGOProMsgAnnounceRace);
+YGOProMessages.register(YGOProMsgAnnounceAttrib);
+YGOProMessages.register(YGOProMsgAnnounceCard);
+YGOProMessages.register(YGOProMsgAnnounceNumber);
+YGOProMessages.register(YGOProMsgCardHint);
+YGOProMessages.register(YGOProMsgTagSwap);
+YGOProMessages.register(YGOProMsgPlayerHint);
+YGOProMessages.register(YGOProMsgMatchKill);
+YGOProMessages.register(YGOProMsgResetTime);
+YGOProMessages.register(YGOProMsgUpdateCard);

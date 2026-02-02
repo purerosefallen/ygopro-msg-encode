@@ -556,6 +556,25 @@ describe('Binary Serialization', () => {
       expect(data.length).toBe(0);
     });
 
+    it('should return empty array for objects without metadata', () => {
+      class NoMetadata {
+        someField: number;
+        anotherField: string;
+      }
+
+      const obj = new NoMetadata();
+      obj.someField = 42;
+      obj.anotherField = 'test';
+
+      const data = toBinaryFields(obj);
+      expect(data.length).toBe(0);
+
+      // Also test with literal object using useClass
+      const literal = { someField: 100, anotherField: 'hello' };
+      const data2 = toBinaryFields(literal, NoMetadata);
+      expect(data2.length).toBe(0);
+    });
+
     it('should handle zero values', () => {
       class ZeroValues {
         @BinaryField('u8', 0)

@@ -213,6 +213,11 @@ export const toBinaryFields = <T = any>(
 ): Uint8Array => {
   const { staticInfos, dynamicInfos } = getFieldInfos(useClass || obj);
 
+  // 如果没有任何字段，返回空数组
+  if (staticInfos.length === 0 && dynamicInfos.length === 0) {
+    return new Uint8Array(0);
+  }
+
   // 先计算总大小
   let totalSize = 0;
   for (const { key, info } of [...staticInfos, ...dynamicInfos]) {

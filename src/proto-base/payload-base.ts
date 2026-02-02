@@ -27,6 +27,6 @@ export class PayloadBase {
   }
 
   copy() {
-    return Object.assign(new (this.constructor as new () => this)(), this);
+    return this.fromPartial(this);
   }
 }
