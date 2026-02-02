@@ -3,8 +3,10 @@ import { PayloadBase } from './payload-base';
 export class RegistryBase<C extends typeof PayloadBase> {
   constructor(
     public payloadClass: C,
-    private identifierOffset = 0,
-    private dataOffset = 0,
+    private options: {
+      identifierOffset?: number;
+      dataOffset?: number;
+    } = {},
   ) {}
 
   protos = new Map<number, C>();
@@ -19,13 +21,13 @@ export class RegistryBase<C extends typeof PayloadBase> {
   }
 
   getInstanceFromPayload(data: Uint8Array): InstanceType<C> | undefined {
-    const identifier = data[this.identifierOffset];
+    const identifier = data[this.options.identifierOffset ?? 0];
     const proto = this.get(identifier);
     if (!proto) {
       return undefined;
     }
     return new proto().fromPayload(
-      data.slice(this.dataOffset),
+      data.slice(this.options.dataOffset ?? 0),
     ) as InstanceType<C>;
   }
 }

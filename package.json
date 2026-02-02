@@ -67,6 +67,8 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "typed-reflector": "^1.0.14"
+    "typed-reflector": "^1.0.14",
+    "ygopro-deck-encode": "^1.0.15",
+    "ygopro-yrp-encode": "^1.0.1"
   }
 }
