@@ -1,5 +1,5 @@
-import { BinaryField } from '../src/binary-meta';
-import { fillBinaryFields, toBinaryFields } from '../src/fill-binary-fields';
+import { BinaryField } from '../src/binary/binary-meta';
+import { fillBinaryFields, toBinaryFields } from '../src/binary/fill-binary-fields';
 
 describe('Binary Serialization', () => {
   describe('Basic numeric types', () => {

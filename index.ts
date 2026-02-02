@@ -1,2 +1,2 @@
-export * from './src/binary-meta';
-export * from './src/fill-binary-fields';
+export * from './src/binary/binary-meta';
+export * from './src/binary/fill-binary-fields';

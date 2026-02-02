@@ -1,5 +1,5 @@
 import { BinaryFieldInfo } from './binary-meta';
-import { reflector } from './metadata';
+import { reflector } from '../metadata';
 
 // 共享的辅助函数
 const isStaticInfo = (info: BinaryFieldInfo) =>

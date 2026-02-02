@@ -1,5 +1,5 @@
 import { MetadataSetter, Reflector } from 'typed-reflector';
-import { BinaryFieldInfo } from './binary-meta';
+import { BinaryFieldInfo } from './binary/binary-meta';
 
 export interface MetadataMap {
   binaryField: BinaryFieldInfo;
