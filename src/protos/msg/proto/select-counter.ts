@@ -66,15 +66,18 @@ export class YGOProMsgSelectCounter extends YGOProMsgResponseBase {
           throw new TypeError(`Index out of range: ${index}`);
         }
       } else {
+        const card = option.card as {
+          code?: number;
+          controller?: number;
+          location?: number;
+          sequence?: number;
+        };
         index = this.cards.findIndex(
           (card) =>
-            (option.card.code == null || card.code === option.card.code) &&
-            (option.card.controller == null ||
-              card.controller === option.card.controller) &&
-            (option.card.location == null ||
-              card.location === option.card.location) &&
-            (option.card.sequence == null ||
-              card.sequence === option.card.sequence),
+            (card.code == null || card.code === card.code) &&
+            (card.controller == null || card.controller === card.controller) &&
+            (card.location == null || card.location === card.location) &&
+            (card.sequence == null || card.sequence === card.sequence),
         );
         if (index === -1) {
           throw new TypeError('Card not found');

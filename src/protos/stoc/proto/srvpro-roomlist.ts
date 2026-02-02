@@ -1,5 +1,6 @@
 import { BinaryField } from '../../../binary/binary-meta';
 import { YGOProStocBase } from '../base';
+import { RoomStatus } from '../../network-enums';
 
 // STOC_SRVPRO_ROOMLIST - SRVPro room list protocol
 // Structure for each room entry
@@ -8,7 +9,7 @@ export class SrvproRoomInfo {
   roomname: string;
 
   @BinaryField('u8', 64)
-  room_status: number;
+  room_status: RoomStatus;
 
   @BinaryField('i8', 65)
   room_duel_count: number;

@@ -517,6 +517,34 @@ npm run clean
 - [Quick Reference](./QUICK_REFERENCE.md) - Quick API reference
 - [Tests Migration](./TESTS_MIGRATION.md) - Testing guide
 
+## Network Protocol Enums
+
+This library provides TypeScript enums for network protocol fields with semantic meaning:
+
+```typescript
+import { 
+  HandResult,           // Rock-paper-scissors result
+  TurnPlayerResult,     // First/second turn selection
+  NetPlayerType,        // Player position/type
+  ChatColor,            // Chat message colors
+  GameMode,             // Single/Match/Tag
+  ErrorMessageType,     // Error message types
+  RoomStatus,           // Room status (SRVPro)
+} from 'ygopro-msg-encode';
+
+// Example: Create a game with specific settings
+const createGame = new YGOProCtosCreateGame();
+createGame.info.mode = GameMode.MATCH;
+createGame.info.rule = 0; // Rule index (0-5), maps to OT values in UI
+
+// Example: Chat with color
+const chat = new YGOProStocChat();
+chat.player_type = ChatColor.RED; // Use color for system message
+chat.msg = "Welcome to the game!";
+```
+
+**Note**: MSG protocol fields (like `phase`, `position`, `location`, `reason`) use constants from `OcgcoreCommonConstants` instead of enums, as they are automatically generated from YGOPro's `common.h`.
+
 ## Dependencies
 
 - **Runtime Dependencies**:

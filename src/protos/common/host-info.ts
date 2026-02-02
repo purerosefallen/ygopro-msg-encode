@@ -1,4 +1,5 @@
 import { BinaryField } from '../../binary/binary-meta';
+import { GameMode } from '../network-enums';
 
 // HostInfo structure from network.h
 // Size: 20 bytes (with padding)
@@ -7,10 +8,10 @@ export class HostInfo {
   lflist: number;
 
   @BinaryField('u8', 4)
-  rule: number;
+  rule: number; // Rule index (0-5), maps to OT values in UI
 
   @BinaryField('u8', 5)
-  mode: number;
+  mode: GameMode;
 
   @BinaryField('u8', 6)
   duel_rule: number;

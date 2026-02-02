@@ -1,12 +1,12 @@
 import { YGOProStocBase } from '../base';
 
 // STOC_CHAT: uint16_t + uint16_t array
-// uint16_t player_type;
+// uint16_t player_type; (can be NetPlayerType 0-7 or ChatColor 8-19)
 // uint16_t msg[256]; (UTF-16 string, variable length)
 export class YGOProStocChat extends YGOProStocBase {
   static identifier = 0x19;
 
-  player_type: number;
+  player_type: number; // NetPlayerType (0-7) or ChatColor (8-19)
   msg: string;
 
   constructor() {

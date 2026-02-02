@@ -11,9 +11,7 @@ describe('CTOS/STOC Protocols', () => {
   describe('CTOS_PLAYER_INFO', () => {
     it('should serialize and deserialize correctly', () => {
       const playerInfo = new YGOProCtosPlayerInfo();
-      playerInfo.name = Array.from({ length: 20 }, (_, i) =>
-        i < 4 ? 0x0041 + i : 0,
-      ); // "ABCD"
+      playerInfo.name = 'ABCD';
 
       const fullPayload = playerInfo.toFullPayload();
 
@@ -22,21 +20,19 @@ describe('CTOS/STOC Protocols', () => {
 
       const parsed = YGOProCtos.getInstanceFromPayload(fullPayload);
       expect(parsed).toBeInstanceOf(YGOProCtosPlayerInfo);
-      expect((parsed as YGOProCtosPlayerInfo).name).toEqual(playerInfo.name);
+      expect((parsed as YGOProCtosPlayerInfo).name).toBe(playerInfo.name);
     });
 
     it('should use fromFullPayload correctly', () => {
       const playerInfo = new YGOProCtosPlayerInfo();
-      playerInfo.name = Array.from({ length: 20 }, (_, i) =>
-        i < 4 ? 0x0041 + i : 0,
-      );
+      playerInfo.name = 'ABCD';
 
       const fullPayload = playerInfo.toFullPayload();
 
       const parsed = new YGOProCtosPlayerInfo();
       parsed.fromFullPayload(fullPayload);
 
-      expect(parsed.name).toEqual(playerInfo.name);
+      expect(parsed.name).toBe(playerInfo.name);
     });
   });
 
@@ -178,7 +174,7 @@ describe('CTOS/STOC Protocols', () => {
   describe('Registry', () => {
     it('should correctly identify CTOS protocols', () => {
       const playerInfo = new YGOProCtosPlayerInfo();
-      playerInfo.name = Array(20).fill(0);
+      playerInfo.name = '';
 
       const fullPayload = playerInfo.toFullPayload();
       const parsed = YGOProCtos.getInstanceFromPayload(fullPayload);

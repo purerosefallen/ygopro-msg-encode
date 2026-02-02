@@ -8,9 +8,9 @@ export class YGOProCtosCreateGame extends YGOProCtosBase {
   @BinaryField(() => HostInfo, 0)
   info: HostInfo;
 
-  @BinaryField('u16', 20, 20)
-  name: number[];
+  @BinaryField('utf16', 20, 20)
+  name: string;
 
-  @BinaryField('u16', 60, 20)
-  pass: number[];
+  @BinaryField('utf16', 60, 20)
+  pass: string;
 }

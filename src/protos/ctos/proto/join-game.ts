@@ -12,6 +12,6 @@ export class YGOProCtosJoinGame extends YGOProCtosBase {
   @BinaryField('u32', 4)
   gameid: number;
 
-  @BinaryField('u16', 8, 20)
-  pass: number[];
+  @BinaryField('utf16', 8, 20)
+  pass: string;
 }
