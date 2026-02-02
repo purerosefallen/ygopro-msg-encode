@@ -2,7 +2,7 @@ import { BinaryField } from '../../../binary/binary-meta';
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
 import { YGOProMsgBase } from '../base';
 
-export class YGOProMsgShuffleSetCard_SetCardInfo {
+export class YGOProMsgShuffleSetCard_CardLocation {
   @BinaryField('u8', 0)
   controller: number;
 
@@ -14,18 +14,14 @@ export class YGOProMsgShuffleSetCard_SetCardInfo {
 
   @BinaryField('u8', 3)
   position: number;
+}
 
-  @BinaryField('u8', 4)
-  newController: number;
+export class YGOProMsgShuffleSetCard_SetCardInfo {
+  @BinaryField(() => YGOProMsgShuffleSetCard_CardLocation, 0)
+  oldLocation: YGOProMsgShuffleSetCard_CardLocation;
 
-  @BinaryField('u8', 5)
-  newLocation: number;
-
-  @BinaryField('u8', 6)
-  newSequence: number;
-
-  @BinaryField('u8', 7)
-  newPosition: number;
+  @BinaryField(() => YGOProMsgShuffleSetCard_CardLocation, 4)
+  newLocation: YGOProMsgShuffleSetCard_CardLocation;
 }
 
 export class YGOProMsgShuffleSetCard extends YGOProMsgBase {
