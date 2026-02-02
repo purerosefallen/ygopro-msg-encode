@@ -20,10 +20,7 @@ export class YGOProMsgSelectCounter_CardInfo {
   @BinaryField('u8', 6)
   sequence: number;
 
-  @BinaryField('u8', 7)
-  subsequence: number;
-
-  @BinaryField('u16', 8)
+  @BinaryField('u16', 7)
   counterCount: number;
 }
 

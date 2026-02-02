@@ -8,11 +8,11 @@ export class YGOProMsgAnnounceAttrib extends YGOProMsgResponseBase {
   @BinaryField('u8', 0)
   player: number;
 
-  @BinaryField('u32', 1)
-  availableAttributes: number;
-
-  @BinaryField('u8', 5)
+  @BinaryField('u8', 1)
   count: number;
+
+  @BinaryField('u32', 2)
+  availableAttributes: number;
 
   prepareResponse(attributes: number) {
     const buffer = new Uint8Array(4);

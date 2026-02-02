@@ -21,9 +21,6 @@ export class YGOProMsgSelectTribute_CardInfo {
   sequence: number;
 
   @BinaryField('u8', 7)
-  subsequence: number;
-
-  @BinaryField('i32', 8)
   releaseParam: number;
 }
 

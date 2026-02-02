@@ -169,10 +169,10 @@ export class YGOProMsgSelectIdleCmd extends YGOProMsgResponseBase {
       obj.ssetableCount * 7 +
       obj.activatableCount * 11,
   )
-  toBpCount: number;
+  canBp: number;
 
   @BinaryField(
-    () => YGOProMsgSelectIdleCmd_ActivatableInfo,
+    'u8',
     (obj) =>
       8 +
       obj.summonableCount * 7 +
@@ -181,115 +181,19 @@ export class YGOProMsgSelectIdleCmd extends YGOProMsgResponseBase {
       obj.msetableCount * 7 +
       obj.ssetableCount * 7 +
       obj.activatableCount * 11,
-    (obj) => obj.toBpCount,
-  )
-  toBpCards: YGOProMsgSelectIdleCmd_ActivatableInfo[];
-
-  @BinaryField(
-    'u8',
-    (obj) =>
-      8 +
-      obj.summonableCount * 7 +
-      obj.spSummonableCount * 7 +
-      obj.reposableCount * 7 +
-      obj.msetableCount * 7 +
-      obj.ssetableCount * 7 +
-      obj.activatableCount * 11 +
-      obj.toBpCount * 11,
-  )
-  toEpCount: number;
-
-  @BinaryField(
-    () => YGOProMsgSelectIdleCmd_ActivatableInfo,
-    (obj) =>
-      9 +
-      obj.summonableCount * 7 +
-      obj.spSummonableCount * 7 +
-      obj.reposableCount * 7 +
-      obj.msetableCount * 7 +
-      obj.ssetableCount * 7 +
-      obj.activatableCount * 11 +
-      obj.toBpCount * 11,
-    (obj) => obj.toEpCount,
-  )
-  toEpCards: YGOProMsgSelectIdleCmd_ActivatableInfo[];
-
-  @BinaryField(
-    'u8',
-    (obj) =>
-      9 +
-      obj.summonableCount * 7 +
-      obj.spSummonableCount * 7 +
-      obj.reposableCount * 7 +
-      obj.msetableCount * 7 +
-      obj.ssetableCount * 7 +
-      obj.activatableCount * 11 +
-      obj.toBpCount * 11 +
-      obj.toEpCount * 11,
-  )
-  shuffleCount: number;
-
-  @BinaryField(
-    () => YGOProMsgSelectIdleCmd_ActivatableInfo,
-    (obj) =>
-      10 +
-      obj.summonableCount * 7 +
-      obj.spSummonableCount * 7 +
-      obj.reposableCount * 7 +
-      obj.msetableCount * 7 +
-      obj.ssetableCount * 7 +
-      obj.activatableCount * 11 +
-      obj.toBpCount * 11 +
-      obj.toEpCount * 11,
-    (obj) => obj.shuffleCount,
-  )
-  shuffleCards: YGOProMsgSelectIdleCmd_ActivatableInfo[];
-
-  @BinaryField(
-    'u8',
-    (obj) =>
-      10 +
-      obj.summonableCount * 7 +
-      obj.spSummonableCount * 7 +
-      obj.reposableCount * 7 +
-      obj.msetableCount * 7 +
-      obj.ssetableCount * 7 +
-      obj.activatableCount * 11 +
-      obj.toBpCount * 11 +
-      obj.toEpCount * 11 +
-      obj.shuffleCount * 11,
-  )
-  canBp: number;
-
-  @BinaryField(
-    'u8',
-    (obj) =>
-      11 +
-      obj.summonableCount * 7 +
-      obj.spSummonableCount * 7 +
-      obj.reposableCount * 7 +
-      obj.msetableCount * 7 +
-      obj.ssetableCount * 7 +
-      obj.activatableCount * 11 +
-      obj.toBpCount * 11 +
-      obj.toEpCount * 11 +
-      obj.shuffleCount * 11,
   )
   canEp: number;
 
   @BinaryField(
     'u8',
     (obj) =>
-      12 +
+      9 +
       obj.summonableCount * 7 +
       obj.spSummonableCount * 7 +
       obj.reposableCount * 7 +
       obj.msetableCount * 7 +
       obj.ssetableCount * 7 +
-      obj.activatableCount * 11 +
-      obj.toBpCount * 11 +
-      obj.toEpCount * 11 +
-      obj.shuffleCount * 11,
+      obj.activatableCount * 11,
   )
   canShuffle: number;
 
