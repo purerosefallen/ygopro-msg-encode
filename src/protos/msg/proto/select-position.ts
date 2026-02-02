@@ -1,8 +1,8 @@
 import { BinaryField } from '../../../binary/binary-meta';
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
-import { YGOProMsgBase } from '../base';
+import { YGOProMsgResponseBase } from '../with-response-base';
 
-export class YGOProMsgSelectPosition extends YGOProMsgBase {
+export class YGOProMsgSelectPosition extends YGOProMsgResponseBase {
   static identifier = OcgcoreCommonConstants.MSG_SELECT_POSITION;
 
   @BinaryField('u8', 0)
@@ -13,4 +13,11 @@ export class YGOProMsgSelectPosition extends YGOProMsgBase {
 
   @BinaryField('u8', 5)
   positions: number;
+
+  prepareResponse(position: number) {
+    const buffer = new Uint8Array(4);
+    const view = new DataView(buffer.buffer);
+    view.setInt32(0, position, true);
+    return buffer;
+  }
 }

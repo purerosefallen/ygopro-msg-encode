@@ -1,8 +1,4 @@
-import {
-  YGOProStoc,
-  YGOProStocSrvproRoomlist,
-  SrvproRoomInfo,
-} from '../index';
+import { YGOProStoc, YGOProStocSrvproRoomlist, SrvproRoomInfo } from '../index';
 
 describe('STOC_SRVPRO_ROOMLIST', () => {
   describe('SrvproRoomInfo', () => {

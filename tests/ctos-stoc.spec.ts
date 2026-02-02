@@ -92,9 +92,7 @@ describe('CTOS/STOC Protocols', () => {
       const shortPayload = fullPayload.slice(0, fullPayload.length - 1);
 
       const parsed = new YGOProCtosHandResult();
-      expect(() => parsed.fromFullPayload(shortPayload)).toThrow(
-        /too short/i,
-      );
+      expect(() => parsed.fromFullPayload(shortPayload)).toThrow(/too short/i);
     });
   });
 

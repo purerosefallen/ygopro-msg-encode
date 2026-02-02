@@ -1,8 +1,8 @@
 import { BinaryField } from '../../../binary/binary-meta';
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
-import { YGOProMsgBase } from '../base';
+import { YGOProMsgResponseBase } from '../with-response-base';
 
-export class YGOProMsgSelectDisField extends YGOProMsgBase {
+export class YGOProMsgSelectDisField extends YGOProMsgResponseBase {
   static identifier = OcgcoreCommonConstants.MSG_SELECT_DISFIELD;
 
   @BinaryField('u8', 0)
@@ -13,4 +13,16 @@ export class YGOProMsgSelectDisField extends YGOProMsgBase {
 
   @BinaryField('u32', 2)
   flag: number;
+
+  prepareResponse(
+    places: Array<{ player: number; location: number; sequence: number }>,
+  ) {
+    const buffer = new Uint8Array(places.length * 3);
+    places.forEach((place, i) => {
+      buffer[i * 3] = place.player;
+      buffer[i * 3 + 1] = place.location;
+      buffer[i * 3 + 2] = place.sequence;
+    });
+    return buffer;
+  }
 }
