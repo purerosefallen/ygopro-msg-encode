@@ -14,6 +14,10 @@ export class YGOProMsgSelectPosition extends YGOProMsgResponseBase {
   @BinaryField('u8', 5)
   positions: number;
 
+  responsePlayer() {
+    return this.player;
+  }
+
   prepareResponse(position: number) {
     const buffer = new Uint8Array(4);
     const view = new DataView(buffer.buffer);

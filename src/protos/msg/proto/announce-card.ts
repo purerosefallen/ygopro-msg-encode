@@ -14,6 +14,10 @@ export class YGOProMsgAnnounceCard extends YGOProMsgResponseBase {
   @BinaryField('i32', 2, (obj) => obj.count)
   opcodes: number[];
 
+  responsePlayer() {
+    return this.player;
+  }
+
   prepareResponse(cardCode: number) {
     const buffer = new Uint8Array(4);
     const view = new DataView(buffer.buffer);

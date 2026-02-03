@@ -26,6 +26,10 @@ export class YGOProMsgSelectEffectYn extends YGOProMsgResponseBase {
   @BinaryField('i32', 9)
   desc: number;
 
+  responsePlayer() {
+    return this.player;
+  }
+
   defaultResponse() {
     return this.prepareResponse(false);
   }

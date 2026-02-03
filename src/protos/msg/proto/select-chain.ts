@@ -54,6 +54,10 @@ export class YGOProMsgSelectChain extends YGOProMsgResponseBase {
   @BinaryField(() => YGOProMsgSelectChain_ChainInfo, 11, (obj) => obj.count)
   chains: YGOProMsgSelectChain_ChainInfo[];
 
+  responsePlayer() {
+    return this.player;
+  }
+
   defaultResponse() {
     // 只有在没有强制连锁时才能不激活
     const hasForced = this.chains.some((chain) => chain.forced !== 0);

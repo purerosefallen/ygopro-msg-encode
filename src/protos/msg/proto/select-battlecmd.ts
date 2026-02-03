@@ -88,6 +88,10 @@ export class YGOProMsgSelectBattleCmd extends YGOProMsgResponseBase {
   })
   canEp: number;
 
+  responsePlayer() {
+    return this.player;
+  }
+
   prepareResponse(
     type: BattleCmdType,
     option?:

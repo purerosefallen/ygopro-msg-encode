@@ -14,6 +14,10 @@ export class YGOProMsgAnnounceRace extends YGOProMsgResponseBase {
   @BinaryField('u32', 2)
   availableRaces: number;
 
+  responsePlayer() {
+    return this.player;
+  }
+
   prepareResponse(races: number) {
     const buffer = new Uint8Array(4);
     const view = new DataView(buffer.buffer);

@@ -11,6 +11,10 @@ export class YGOProMsgSelectYesNo extends YGOProMsgResponseBase {
   @BinaryField('i32', 1)
   desc: number;
 
+  responsePlayer() {
+    return this.player;
+  }
+
   defaultResponse() {
     return this.prepareResponse(false);
   }

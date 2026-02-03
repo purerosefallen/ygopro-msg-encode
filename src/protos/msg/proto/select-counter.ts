@@ -42,6 +42,10 @@ export class YGOProMsgSelectCounter extends YGOProMsgResponseBase {
   @BinaryField(() => YGOProMsgSelectCounter_CardInfo, 6, (obj) => obj.count)
   cards: YGOProMsgSelectCounter_CardInfo[];
 
+  responsePlayer() {
+    return this.player;
+  }
+
   prepareResponse(
     counterOptions: Array<{
       card:

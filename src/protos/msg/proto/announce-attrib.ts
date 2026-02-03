@@ -14,6 +14,10 @@ export class YGOProMsgAnnounceAttrib extends YGOProMsgResponseBase {
   @BinaryField('u32', 2)
   availableAttributes: number;
 
+  responsePlayer() {
+    return this.player;
+  }
+
   prepareResponse(attributes: number) {
     const buffer = new Uint8Array(4);
     const view = new DataView(buffer.buffer);

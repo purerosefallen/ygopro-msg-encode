@@ -14,6 +14,10 @@ export class YGOProMsgSelectPlace extends YGOProMsgResponseBase {
   @BinaryField('u32', 2)
   flag: number;
 
+  responsePlayer() {
+    return this.player;
+  }
+
   prepareResponse(
     places: Array<{ player: number; location: number; sequence: number }>,
   ) {

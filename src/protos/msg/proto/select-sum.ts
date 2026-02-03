@@ -66,6 +66,10 @@ export class YGOProMsgSelectSum extends YGOProMsgResponseBase {
   )
   cards: YGOProMsgSelectSum_CardInfo[];
 
+  responsePlayer() {
+    return this.player;
+  }
+
   prepareResponse(
     cardOptions: Array<
       | IndexResponseObject

@@ -197,6 +197,10 @@ export class YGOProMsgSelectIdleCmd extends YGOProMsgResponseBase {
   )
   canShuffle: number;
 
+  responsePlayer() {
+    return this.player;
+  }
+
   prepareResponse(
     type: IdleCmdType,
     option?:

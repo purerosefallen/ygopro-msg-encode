@@ -33,6 +33,10 @@ export class YGOProMsgSortCard extends YGOProMsgResponseBase {
   @BinaryField(() => YGOProMsgSortCard_CardInfo, 2, (obj) => obj.count)
   cards: YGOProMsgSortCard_CardInfo[];
 
+  responsePlayer() {
+    return this.player;
+  }
+
   defaultResponse() {
     return this.prepareResponse(null);
   }
@@ -53,6 +57,7 @@ export class YGOProMsgSortCard extends YGOProMsgResponseBase {
     }
 
     const indices: number[] = [];
+    const usedIndices = new Set<number>();
     for (const option of sortedOptions) {
       let index: number;
       if (isIndexResponse(option)) {
@@ -62,7 +67,8 @@ export class YGOProMsgSortCard extends YGOProMsgResponseBase {
         }
       } else {
         index = this.cards.findIndex(
-          (card) =>
+          (card, idx) =>
+            !usedIndices.has(idx) &&
             (option.code == null || card.code === option.code) &&
             (option.controller == null ||
               card.controller === option.controller) &&
@@ -74,6 +80,7 @@ export class YGOProMsgSortCard extends YGOProMsgResponseBase {
         }
       }
       indices.push(index);
+      usedIndices.add(index);
     }
 
     const buffer = new Uint8Array(indices.length);

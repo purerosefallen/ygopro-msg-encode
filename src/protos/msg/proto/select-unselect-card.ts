@@ -66,6 +66,10 @@ export class YGOProMsgSelectUnselectCard extends YGOProMsgResponseBase {
   )
   unselectableCards: YGOProMsgSelectUnselectCard_CardInfo[];
 
+  responsePlayer() {
+    return this.player;
+  }
+
   defaultResponse() {
     // 只有在可以取消或完成时才能不选择
     if (this.cancelable === 0 && this.finishable === 0) {

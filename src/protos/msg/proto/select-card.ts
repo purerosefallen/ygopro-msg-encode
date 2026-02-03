@@ -45,6 +45,10 @@ export class YGOProMsgSelectCard extends YGOProMsgResponseBase {
   @BinaryField(() => YGOProMsgSelectCard_CardInfo, 5, (obj) => obj.count)
   cards: YGOProMsgSelectCard_CardInfo[];
 
+  responsePlayer() {
+    return this.player;
+  }
+
   defaultResponse() {
     // 只有在可以取消时才能不选择
     if (this.cancelable === 0) {
@@ -72,6 +76,7 @@ export class YGOProMsgSelectCard extends YGOProMsgResponseBase {
     }
 
     const indices: number[] = [];
+    const usedIndices = new Set<number>();
     for (const option of cardOptions) {
       let index: number;
       if (isIndexResponse(option)) {
@@ -81,7 +86,8 @@ export class YGOProMsgSelectCard extends YGOProMsgResponseBase {
         }
       } else {
         index = this.cards.findIndex(
-          (card) =>
+          (card, idx) =>
+            !usedIndices.has(idx) &&
             (option.code == null || card.code === option.code) &&
             (option.controller == null ||
               card.controller === option.controller) &&
@@ -93,6 +99,7 @@ export class YGOProMsgSelectCard extends YGOProMsgResponseBase {
         }
       }
       indices.push(index);
+      usedIndices.add(index);
     }
 
     const buffer = new Uint8Array(1 + indices.length);

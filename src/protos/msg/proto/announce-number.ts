@@ -19,6 +19,10 @@ export class YGOProMsgAnnounceNumber extends YGOProMsgResponseBase {
   @BinaryField('i32', 2, (obj) => obj.count)
   numbers: number[];
 
+  responsePlayer() {
+    return this.player;
+  }
+
   prepareResponse(option: IndexResponseObject | number) {
     let index: number;
 
