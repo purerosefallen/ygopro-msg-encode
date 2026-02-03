@@ -83,3 +83,4 @@ export * from './update-card';
 export * from './update-data';
 export * from './waiting';
 export * from './win';
+export * from './select-place-common'
