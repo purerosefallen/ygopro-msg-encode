@@ -321,11 +321,18 @@ export const toBinaryFields = <T = any>(
         // 对象数组
         const length = resolveLength(obj, info.length, key);
         let currentOffset = offset;
+        // 确保遍历完整的 length，如果数组元素不够，剩余部分会保持为 0（zero fill）
         for (let i = 0; i < length; i++) {
-          if (value[i]) {
+          if (value && i < value.length && value[i]) {
             const itemData = toBinaryFields(value[i], Constructor);
             data.set(itemData, currentOffset);
             currentOffset += itemData.length;
+          } else {
+            // 如果元素不存在，跳过该对象的大小
+            const emptyInstance = new Constructor();
+            const itemData = toBinaryFields(emptyInstance, Constructor);
+            currentOffset += itemData.length;
+            // 这部分会保持为 0（已由 Uint8Array 初始化）
           }
         }
       } else {
@@ -349,10 +356,12 @@ export const toBinaryFields = <T = any>(
     if (info.length != null) {
       // 数组
       const length = resolveLength(obj, info.length, key);
+      // 确保遍历完整的 length，如果数组元素不够，剩余部分会保持为 0（zero fill）
       for (let i = 0; i < length; i++) {
-        if (value[i] !== undefined && value[i] !== null) {
+        if (value && i < value.length && value[i] !== undefined && value[i] !== null) {
           writeValue(typeStr, offset + i * typeSize, value[i]);
         }
+        // 如果 value 不存在、索引超出范围或值为 undefined/null，则保持为 0（已由 Uint8Array 初始化）
       }
     } else {
       // 单个值
