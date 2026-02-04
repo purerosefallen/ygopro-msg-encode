@@ -1,7 +1,7 @@
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
 import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
 import { YGOProMsgBase } from '../base';
-import { CardQuery } from './card-query';
+import { CardQuery } from '../../common/card-query';
 
 // MSG_UPDATE_CARD 的结构：更新单张卡片的信息
 export class YGOProMsgUpdateCard extends YGOProMsgBase {

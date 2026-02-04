@@ -9,7 +9,6 @@ export * from './battle';
 export * from './become-target';
 export * from './cancel-target';
 export * from './card-hint';
-export * from './card-query';
 export * from './card-target';
 export * from './chain-disabled';
 export * from './chain-end';

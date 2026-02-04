@@ -1,4 +1,4 @@
-import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
+import { OcgcoreCommonConstants } from '../../vendor/ocgcore-constants';
 
 export class CardQuery_CardLocation {
   controller: number;
