@@ -15,7 +15,9 @@ export class YGOProMsgRockPaperScissors extends YGOProMsgResponseBase {
 
   prepareResponse(choice: HandResult) {
     if (choice < HandResult.ROCK || choice > HandResult.PAPER) {
-      throw new TypeError(`Invalid choice: ${choice}. Must be 1 (ROCK), 2 (SCISSORS), or 3 (PAPER)`);
+      throw new TypeError(
+        `Invalid choice: ${choice}. Must be 1 (ROCK), 2 (SCISSORS), or 3 (PAPER)`,
+      );
     }
     const buffer = new Uint8Array(1);
     buffer[0] = choice;

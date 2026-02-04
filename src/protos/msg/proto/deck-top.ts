@@ -22,4 +22,6 @@ export class YGOProMsgDeckTop extends YGOProMsgBase {
     }
     return view;
   }
+
+  // deck-top 使用基类的 playerView (基于 player 字段)
 }

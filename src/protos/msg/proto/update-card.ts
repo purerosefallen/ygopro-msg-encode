@@ -45,6 +45,9 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
   playerView(playerId: number): this {
     // MSG_UPDATE_CARD 的字段名是 controller，不是 player
     // 所以需要重写 playerView 方法
+    if (playerId === NetPlayerType.OBSERVER) {
+      return this.observerView();
+    }
     if (this.controller === playerId) {
       return this.copy();
     }
@@ -112,7 +115,6 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
   }
 
   getSendTargets(): number[] {
-    // RefreshSingle 发送顺序：player -> 1-player -> observers
-    return [this.controller, 1 - this.controller, NetPlayerType.OBSERVER];
+    return [];
   }
 }

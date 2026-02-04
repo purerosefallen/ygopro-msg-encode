@@ -40,4 +40,6 @@ export class YGOProMsgConfirmExtraTop extends YGOProMsgBase {
     });
     return view;
   }
+
+  // confirm-extratop 使用基类的 playerView (基于 player 字段)
 }

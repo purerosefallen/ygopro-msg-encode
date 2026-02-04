@@ -49,7 +49,8 @@ export class YGOProMsgConfirmCards extends YGOProMsgBase {
 
   getSendTargets(): number[] {
     // 如果卡片在 DECK 位置，只发给 player
-    if (this.cards.length > 0 && this.cards[0].location === 0x01) { // LOCATION_DECK
+    if (this.cards.length > 0 && this.cards[0].location === 0x01) {
+      // LOCATION_DECK
       return [this.player];
     }
     // 否则发给所有人

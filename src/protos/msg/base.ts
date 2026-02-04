@@ -41,6 +41,9 @@ export class YGOProMsgBase extends PayloadBase {
   }
 
   playerView(playerId: number): this {
+    if (playerId === NetPlayerType.OBSERVER) {
+      return this.observerView();
+    }
     if (typeof this['player'] === 'number') {
       const selfPlayerId = this['player'];
       if (selfPlayerId === playerId) {
