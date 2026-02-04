@@ -3,4 +3,8 @@ import { YGOProMsgBase } from '../base';
 
 export class YGOProMsgRetry extends YGOProMsgBase {
   static identifier = OcgcoreCommonConstants.MSG_RETRY;
+
+  getSendTargets(): number[] {
+    return [];
+  }
 }

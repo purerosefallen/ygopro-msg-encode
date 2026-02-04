@@ -13,4 +13,8 @@ export class YGOProMsgMissedEffect extends YGOProMsgBase {
 
   @BinaryField('i32', 5)
   desc: number;
+
+  getSendTargets(): number[] {
+    return [this.player];
+  }
 }

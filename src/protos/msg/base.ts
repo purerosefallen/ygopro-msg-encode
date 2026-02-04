@@ -1,4 +1,9 @@
 import { PayloadBase } from '../../proto-base/payload-base';
+import { NetPlayerType } from '../network-enums';
+
+// 常用的发送目标常量
+export const SEND_TO_PLAYERS: number[] = [0, 1];
+export const SEND_TO_ALL: number[] = [0, 1, NetPlayerType.OBSERVER];
 
 export class YGOProMsgBase extends PayloadBase {
   fromPayload(data: Uint8Array): this {
@@ -44,5 +49,9 @@ export class YGOProMsgBase extends PayloadBase {
       return this.opponentView();
     }
     return this.copy();
+  }
+
+  getSendTargets(): number[] {
+    return SEND_TO_ALL;
   }
 }

@@ -1,5 +1,6 @@
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
 import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
+import { NetPlayerType } from '../../network-enums';
 import { YGOProMsgBase } from '../base';
 import { CardQuery } from '../../common/card-query';
 
@@ -108,5 +109,10 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
     result.set(cardPayload, 8);
 
     return result;
+  }
+
+  getSendTargets(): number[] {
+    // RefreshSingle 发送顺序：player -> 1-player -> observers
+    return [this.controller, 1 - this.controller, NetPlayerType.OBSERVER];
   }
 }

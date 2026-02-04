@@ -6,4 +6,8 @@ export abstract class YGOProMsgResponseBase extends YGOProMsgBase {
   }
 
   abstract responsePlayer(): number;
+
+  getSendTargets(): number[] {
+    return [this.responsePlayer()];
+  }
 }

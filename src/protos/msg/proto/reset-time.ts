@@ -10,4 +10,8 @@ export class YGOProMsgResetTime extends YGOProMsgBase {
 
   @BinaryField('i16', 1)
   time: number;
+
+  getSendTargets(): number[] {
+    return [];
+  }
 }

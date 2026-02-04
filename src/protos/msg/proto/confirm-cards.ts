@@ -1,6 +1,6 @@
 import { BinaryField } from '../../../binary/binary-meta';
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
-import { YGOProMsgBase } from '../base';
+import { SEND_TO_ALL, YGOProMsgBase } from '../base';
 
 export class YGOProMsgConfirmCards_CardInfo {
   @BinaryField('i32', 0)
@@ -45,5 +45,14 @@ export class YGOProMsgConfirmCards extends YGOProMsgBase {
       return c;
     });
     return view;
+  }
+
+  getSendTargets(): number[] {
+    // 如果卡片在 DECK 位置，只发给 player
+    if (this.cards.length > 0 && this.cards[0].location === 0x01) { // LOCATION_DECK
+      return [this.player];
+    }
+    // 否则发给所有人
+    return SEND_TO_ALL;
   }
 }
