@@ -1,6 +1,6 @@
-import { BinaryField } from "../../binary/binary-meta";
-import { PayloadBase } from "../../proto-base/payload-base";
-import { OcgcoreCommonConstants } from "../../vendor/ocgcore-constants";
+import { BinaryField } from '../../binary/binary-meta';
+import { PayloadBase } from '../../proto-base/payload-base';
+import { OcgcoreCommonConstants } from '../../vendor/ocgcore-constants';
 
 // Constants from card_data.h
 const CARD_ARTWORK_VERSIONS_OFFSET = 20;
@@ -14,14 +14,22 @@ const CARD_TWINKLE_MOSS = 13857930;
 function checkSetcode(setcode: number, value: number): boolean {
   const settype = value & 0x0fff;
   const setsubtype = value & 0xf000;
-  return setcode && (setcode & 0x0fff) === settype && (setcode & setsubtype) === setsubtype;
+  return (
+    setcode &&
+    (setcode & 0x0fff) === settype &&
+    (setcode & setsubtype) === setsubtype
+  );
 }
 
 function isAlternative(code: number, alias: number): boolean {
   if (code === CARD_BLACK_LUSTER_SOLDIER2) {
     return false;
   }
-  return alias && (alias < code + CARD_ARTWORK_VERSIONS_OFFSET) && (code < alias + CARD_ARTWORK_VERSIONS_OFFSET);
+  return (
+    alias &&
+    alias < code + CARD_ARTWORK_VERSIONS_OFFSET &&
+    code < alias + CARD_ARTWORK_VERSIONS_OFFSET
+  );
 }
 
 export class CardData extends PayloadBase {
@@ -93,7 +101,7 @@ export class CardData extends PayloadBase {
    */
   isDeclarable(opcode: number[]): boolean {
     const stack: number[] = [];
-    
+
     for (const it of opcode) {
       switch (it) {
         case OcgcoreCommonConstants.OPCODE_ADD: {
@@ -132,7 +140,7 @@ export class CardData extends PayloadBase {
           if (stack.length >= 2) {
             const rhs = stack.pop()!;
             const lhs = stack.pop()!;
-            stack.push((lhs && rhs) ? 1 : 0);
+            stack.push(lhs && rhs ? 1 : 0);
           }
           break;
         }
@@ -140,7 +148,7 @@ export class CardData extends PayloadBase {
           if (stack.length >= 2) {
             const rhs = stack.pop()!;
             const lhs = stack.pop()!;
-            stack.push((lhs || rhs) ? 1 : 0);
+            stack.push(lhs || rhs ? 1 : 0);
           }
           break;
         }
@@ -154,14 +162,14 @@ export class CardData extends PayloadBase {
         case OcgcoreCommonConstants.OPCODE_NOT: {
           if (stack.length >= 1) {
             const val = stack.pop()!;
-            stack.push((!val) ? 1 : 0);
+            stack.push(!val ? 1 : 0);
           }
           break;
         }
         case OcgcoreCommonConstants.OPCODE_ISCODE: {
           if (stack.length >= 1) {
             const code = stack.pop()!;
-            stack.push((this.code === code) ? 1 : 0);
+            stack.push(this.code === code ? 1 : 0);
           }
           break;
         }
@@ -176,21 +184,21 @@ export class CardData extends PayloadBase {
         case OcgcoreCommonConstants.OPCODE_ISTYPE: {
           if (stack.length >= 1) {
             const val = stack.pop()!;
-            stack.push((this.type & val) ? 1 : 0);
+            stack.push(this.type & val ? 1 : 0);
           }
           break;
         }
         case OcgcoreCommonConstants.OPCODE_ISRACE: {
           if (stack.length >= 1) {
             const raceVal = stack.pop()!;
-            stack.push((this.race & raceVal) ? 1 : 0);
+            stack.push(this.race & raceVal ? 1 : 0);
           }
           break;
         }
         case OcgcoreCommonConstants.OPCODE_ISATTRIBUTE: {
           if (stack.length >= 1) {
             const attributeVal = stack.pop()!;
-            stack.push((this.attribute & attributeVal) ? 1 : 0);
+            stack.push(this.attribute & attributeVal ? 1 : 0);
           }
           break;
         }
@@ -201,14 +209,21 @@ export class CardData extends PayloadBase {
         }
       }
     }
-    
+
     if (stack.length !== 1 || stack[0] === 0) {
       return false;
     }
-    
+
     // Additional checks from the original C++ code
-    return this.code === CARD_MARINE_DOLPHIN 
-        || this.code === CARD_TWINKLE_MOSS
-        || (!this.alias && (this.type & (OcgcoreCommonConstants.TYPE_MONSTER | OcgcoreCommonConstants.TYPE_TOKEN)) !== (OcgcoreCommonConstants.TYPE_MONSTER | OcgcoreCommonConstants.TYPE_TOKEN));
+    return (
+      this.code === CARD_MARINE_DOLPHIN ||
+      this.code === CARD_TWINKLE_MOSS ||
+      (!this.alias &&
+        (this.type &
+          (OcgcoreCommonConstants.TYPE_MONSTER |
+            OcgcoreCommonConstants.TYPE_TOKEN)) !==
+          (OcgcoreCommonConstants.TYPE_MONSTER |
+            OcgcoreCommonConstants.TYPE_TOKEN))
+    );
   }
 }

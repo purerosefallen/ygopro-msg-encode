@@ -17,7 +17,7 @@ export class YGOProStocDeckCount_DeckInfo {
 
 /**
  * STOC_DECK_COUNT: int16_t[6]
- * 
+ *
  * Sent during side deck phase to inform clients of deck counts.
  */
 export class YGOProStocDeckCount extends YGOProStocBase {

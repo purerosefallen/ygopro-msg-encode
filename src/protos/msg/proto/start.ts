@@ -16,7 +16,7 @@ export class YGOProMsgStart extends YGOProMsgBase {
    * Player type / position (composite field):
    * - Low 4 bits (0x0F): Player number (0=first, 1=second, 2-3 in tag mode)
    * - High 4 bits (0xF0): Observer flag (0x10 = observer)
-   * 
+   *
    * Use `playerNumber` and `observerFlag` getters/setters to access individual components.
    */
   @BinaryField('u8', 0)

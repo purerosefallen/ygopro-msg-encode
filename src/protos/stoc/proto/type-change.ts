@@ -3,7 +3,7 @@ import { YGOProStocBase } from '../base';
 
 /**
  * STOC_TYPE_CHANGE
- * 
+ *
  * Informs the client of their player type and host status in the room.
  */
 export class YGOProStocTypeChange extends YGOProStocBase {
@@ -13,7 +13,7 @@ export class YGOProStocTypeChange extends YGOProStocBase {
    * Composite field:
    * - Low 4 bits (0x0F): Player position (0-7)
    * - High 4 bits (0xF0): Host flag (0x10 = host, 0x00 = not host)
-   * 
+   *
    * Use `playerPosition` and `isHost` getters/setters to access individual components.
    */
   @BinaryField('u8', 0)

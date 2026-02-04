@@ -1,6 +1,9 @@
 import { BinaryField } from '../src/binary/binary-meta';
 import { PayloadBase } from '../src/proto-base/payload-base';
-import { fillBinaryFields, toBinaryFields } from '../src/binary/fill-binary-fields';
+import {
+  fillBinaryFields,
+  toBinaryFields,
+} from '../src/binary/fill-binary-fields';
 
 class TestArrayClass extends PayloadBase {
   @BinaryField('u16', 0, 8)
@@ -18,7 +21,11 @@ describe('Binary zero fill', () => {
       obj.values = [100, 200]; // Only 2 elements, expected 4
 
       const buffer = toBinaryFields(obj);
-      const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+      const view = new DataView(
+        buffer.buffer,
+        buffer.byteOffset,
+        buffer.byteLength,
+      );
 
       // Check first 3 elements of numbers array
       expect(view.getUint16(0, true)).toBe(1);
@@ -47,7 +54,11 @@ describe('Binary zero fill', () => {
       obj.values = []; // Empty array, expected 4
 
       const buffer = toBinaryFields(obj);
-      const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+      const view = new DataView(
+        buffer.buffer,
+        buffer.byteOffset,
+        buffer.byteLength,
+      );
 
       // All elements should be zero
       for (let i = 0; i < 8; i++) {
@@ -64,7 +75,11 @@ describe('Binary zero fill', () => {
       // Don't set numbers and values, they will be undefined
 
       const buffer = toBinaryFields(obj);
-      const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+      const view = new DataView(
+        buffer.buffer,
+        buffer.byteOffset,
+        buffer.byteLength,
+      );
 
       // All elements should be zero
       for (let i = 0; i < 8; i++) {
@@ -82,7 +97,11 @@ describe('Binary zero fill', () => {
       obj.values = [100, undefined as any, 300]; // Has undefined element, expected 4
 
       const buffer = toBinaryFields(obj);
-      const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+      const view = new DataView(
+        buffer.buffer,
+        buffer.byteOffset,
+        buffer.byteLength,
+      );
 
       expect(view.getUint16(0, true)).toBe(1);
       expect(view.getUint16(2, true)).toBe(2);
@@ -105,7 +124,11 @@ describe('Binary zero fill', () => {
       obj.values = [100, 200, 300, 400]; // Full 4 elements
 
       const buffer = toBinaryFields(obj);
-      const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+      const view = new DataView(
+        buffer.buffer,
+        buffer.byteOffset,
+        buffer.byteLength,
+      );
 
       for (let i = 0; i < 8; i++) {
         expect(view.getUint16(i * 2, true)).toBe(i + 1);
@@ -148,7 +171,7 @@ describe('Binary zero fill', () => {
       obj1.values = [100, 200]; // Shorter than 4
 
       const buffer = toBinaryFields(obj1);
-      
+
       const obj2 = new TestArrayClass();
       fillBinaryFields(obj2, buffer);
 
