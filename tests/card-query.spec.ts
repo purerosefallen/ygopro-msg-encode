@@ -4,7 +4,7 @@ import {
   CardQuery,
   YGOProMsgUpdateCard,
   YGOProMsgUpdateData,
-} from '../src/protos/msg/proto';
+} from '../src/protos';
 
 describe('CardQuery', () => {
   describe('Basic query fields', () => {
