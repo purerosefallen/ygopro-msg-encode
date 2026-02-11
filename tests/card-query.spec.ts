@@ -1,9 +1,6 @@
 import { OcgcoreCommonConstants } from '../src/vendor/ocgcore-constants';
 import { OcgcoreScriptConstants } from '../src/vendor/script-constants';
-import {
-  YGOProMsgUpdateCard,
-  YGOProMsgUpdateData,
-} from '../src/protos/msg/proto';
+import { YGOProMsgUpdateCard, YGOProMsgUpdateData } from '../src/protos';
 import { CardQuery } from '../src/protos/common';
 
 describe('CardQuery', () => {

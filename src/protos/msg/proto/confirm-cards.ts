@@ -14,9 +14,6 @@ export class YGOProMsgConfirmCards_CardInfo {
 
   @BinaryField('u8', 6)
   sequence: number;
-
-  @BinaryField('u8', 7)
-  subsequence: number;
 }
 
 export class YGOProMsgConfirmCards extends YGOProMsgBase {
@@ -26,7 +23,7 @@ export class YGOProMsgConfirmCards extends YGOProMsgBase {
   player: number;
 
   @BinaryField('u8', 1)
-  unused: number;
+  skipPanel: number;
 
   @BinaryField('u8', 2)
   count: number;
