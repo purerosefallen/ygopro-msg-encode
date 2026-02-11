@@ -70,6 +70,59 @@ describe('Variable-Length String Protocols', () => {
 
       expect(parsed.msg).toBe(msg);
     });
+
+    it('should handle maximum length message (255 chars - client limit)', () => {
+      const chat = new YGOProCtosChat();
+      // Client typically limits to 255 characters (LEN_CHAT_MSG - 1)
+      chat.msg = 'A'.repeat(255);
+
+      const body = chat.toPayload();
+      expect(body.length).toBe(255 * 2 + 2); // 255 chars * 2 + null terminator
+
+      const fullPayload = chat.toFullPayload();
+      const parsed = YGOProCtos.getInstanceFromPayload(
+        fullPayload,
+      ) as YGOProCtosChat;
+
+      expect(parsed.msg).toBe(chat.msg);
+      expect(parsed.msg.length).toBe(255);
+    });
+
+    it('should handle maximum protocol length (256 chars)', () => {
+      const chat = new YGOProCtosChat();
+      // Maximum protocol length is 256 characters (LEN_CHAT_MSG)
+      chat.msg = 'B'.repeat(256);
+
+      const body = chat.toPayload();
+      expect(body.length).toBe(256 * 2 + 2); // 256 chars * 2 + null terminator
+
+      const fullPayload = chat.toFullPayload();
+      const parsed = YGOProCtos.getInstanceFromPayload(
+        fullPayload,
+      ) as YGOProCtosChat;
+
+      expect(parsed.msg).toBe(chat.msg);
+      expect(parsed.msg.length).toBe(256);
+    });
+
+    it('should truncate message exceeding maximum length', () => {
+      const chat = new YGOProCtosChat();
+      // Try to send 300 characters (exceeds 256 limit)
+      chat.msg = 'C'.repeat(300);
+
+      const body = chat.toPayload();
+      // Should be truncated to 256 characters
+      expect(body.length).toBe(256 * 2 + 2);
+
+      const fullPayload = chat.toFullPayload();
+      const parsed = YGOProCtos.getInstanceFromPayload(
+        fullPayload,
+      ) as YGOProCtosChat;
+
+      // Should be truncated to 256 characters
+      expect(parsed.msg).toBe('C'.repeat(256));
+      expect(parsed.msg.length).toBe(256);
+    });
   });
 
   describe('STOC_CHAT', () => {
@@ -130,6 +183,47 @@ describe('Variable-Length String Protocols', () => {
 
       expect(parsed.player_type).toBe(0x0001);
       expect(parsed.msg).toBe('');
+    });
+
+    it('should handle maximum length message (256 chars)', () => {
+      const chat = new YGOProStocChat();
+      chat.player_type = 0x0001;
+      // Maximum protocol length is 256 characters (LEN_CHAT_MSG)
+      chat.msg = 'X'.repeat(256);
+
+      const body = chat.toPayload();
+      // 2 (player_type) + 256 chars * 2 + 2 (null terminator)
+      expect(body.length).toBe(2 + 256 * 2 + 2);
+
+      const fullPayload = chat.toFullPayload();
+      const parsed = YGOProStoc.getInstanceFromPayload(
+        fullPayload,
+      ) as YGOProStocChat;
+
+      expect(parsed.player_type).toBe(0x0001);
+      expect(parsed.msg).toBe(chat.msg);
+      expect(parsed.msg.length).toBe(256);
+    });
+
+    it('should truncate message exceeding maximum length', () => {
+      const chat = new YGOProStocChat();
+      chat.player_type = 0x0002;
+      // Try to send 400 characters (exceeds 256 limit)
+      chat.msg = 'Y'.repeat(400);
+
+      const body = chat.toPayload();
+      // Should be truncated to 256 characters
+      expect(body.length).toBe(2 + 256 * 2 + 2);
+
+      const fullPayload = chat.toFullPayload();
+      const parsed = YGOProStoc.getInstanceFromPayload(
+        fullPayload,
+      ) as YGOProStocChat;
+
+      expect(parsed.player_type).toBe(0x0002);
+      // Should be truncated to 256 characters
+      expect(parsed.msg).toBe('Y'.repeat(256));
+      expect(parsed.msg.length).toBe(256);
     });
   });
 
@@ -257,6 +351,47 @@ describe('Variable-Length String Protocols', () => {
 
       expect(parsed.real_ip).toBe('127.0.0.1');
       expect(parsed.hostname).toBe('');
+    });
+
+    it('should handle maximum hostname length (256 chars)', () => {
+      const ext = new YGOProCtosExternalAddress();
+      ext.real_ip = '192.168.1.1';
+      // Maximum protocol length is 256 characters (LEN_HOSTNAME)
+      ext.hostname = 'a'.repeat(256);
+
+      const body = ext.toPayload();
+      // 4 (real_ip) + 256 chars * 2 + 2 (null terminator)
+      expect(body.length).toBe(4 + 256 * 2 + 2);
+
+      const fullPayload = ext.toFullPayload();
+      const parsed = YGOProCtos.getInstanceFromPayload(
+        fullPayload,
+      ) as YGOProCtosExternalAddress;
+
+      expect(parsed.real_ip).toBe('192.168.1.1');
+      expect(parsed.hostname).toBe(ext.hostname);
+      expect(parsed.hostname.length).toBe(256);
+    });
+
+    it('should truncate hostname exceeding maximum length', () => {
+      const ext = new YGOProCtosExternalAddress();
+      ext.real_ip = '10.0.0.1';
+      // Try to send 500 characters (exceeds 256 limit)
+      ext.hostname = 'b'.repeat(500);
+
+      const body = ext.toPayload();
+      // Should be truncated to 256 characters
+      expect(body.length).toBe(4 + 256 * 2 + 2);
+
+      const fullPayload = ext.toFullPayload();
+      const parsed = YGOProCtos.getInstanceFromPayload(
+        fullPayload,
+      ) as YGOProCtosExternalAddress;
+
+      expect(parsed.real_ip).toBe('10.0.0.1');
+      // Should be truncated to 256 characters
+      expect(parsed.hostname).toBe('b'.repeat(256));
+      expect(parsed.hostname.length).toBe(256);
     });
   });
 

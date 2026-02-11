@@ -168,8 +168,10 @@ export const fillBinaryFields = <T = any>(
 
     // 字符串类型
     if (type === 'utf8' || type === 'utf16') {
-      // length 表示字节长度，已在 decorator 中检查必须存在
-      const byteLength = resolveLength(obj, info.length!, key);
+      // utf16: length 表示字符数，需要转换为字节数（字符数 * 2）
+      // utf8: length 表示字节长度
+      const lengthValue = resolveLength(obj, info.length!, key);
+      const byteLength = type === 'utf16' ? lengthValue * 2 : lengthValue;
       (obj as any)[key] = readString(type, offset, byteLength);
       totalSize = Math.max(totalSize, offset + byteLength);
       return;
@@ -246,7 +248,10 @@ export const toBinaryFields = <T = any>(
         }
       }
     } else if (type === 'utf8' || type === 'utf16') {
-      const byteLength = resolveLength(obj, info.length!, key);
+      // utf16: length 表示字符数，需要转换为字节数（字符数 * 2）
+      // utf8: length 表示字节长度
+      const lengthValue = resolveLength(obj, info.length!, key);
+      const byteLength = type === 'utf16' ? lengthValue * 2 : lengthValue;
       totalSize = Math.max(totalSize, offset + byteLength);
     } else {
       const typeSize = getTypeSize(type as string);
@@ -345,7 +350,10 @@ export const toBinaryFields = <T = any>(
 
     // 字符串类型
     if (type === 'utf8' || type === 'utf16') {
-      const byteLength = resolveLength(obj, info.length!, key);
+      // utf16: length 表示字符数，需要转换为字节数（字符数 * 2）
+      // utf8: length 表示字节长度
+      const lengthValue = resolveLength(obj, info.length!, key);
+      const byteLength = type === 'utf16' ? lengthValue * 2 : lengthValue;
       writeString(type, offset, byteLength, value);
       return;
     }

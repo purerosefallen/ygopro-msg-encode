@@ -26,6 +26,8 @@ export const BinaryField = (
   length?: Length,
 ) => {
   // utf8/utf16 必须指定 length
+  // utf16: length 表示字符数（每个字符占 2 字节）
+  // utf8: length 表示字节数
   if ((type === 'utf8' || type === 'utf16') && length == null) {
     throw new Error(`String type ${type} requires length parameter`);
   }

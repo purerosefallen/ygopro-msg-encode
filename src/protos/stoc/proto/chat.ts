@@ -3,8 +3,11 @@ import { YGOProStocBase } from '../base';
 // STOC_CHAT: uint16_t + uint16_t array
 // uint16_t player_type; (can be NetPlayerType 0-7 or ChatColor 8-19)
 // uint16_t msg[256]; (UTF-16 string, variable length)
+// Maximum length: 256 characters (LEN_CHAT_MSG in YGOPro)
+// Maximum total size: (1 + 256) * 2 = 514 bytes (SIZE_STOC_CHAT)
 export class YGOProStocChat extends YGOProStocBase {
   static identifier = 0x19;
+  static readonly MAX_LENGTH = 256;
 
   player_type: number; // NetPlayerType (0-7) or ChatColor (8-19)
   msg: string;
@@ -35,11 +38,11 @@ export class YGOProStocChat extends YGOProStocBase {
   }
 
   toPayload(): Uint8Array {
-    // Encode message to UTF-16LE
-    const encoder = new TextEncoder();
-    const utf8 = encoder.encode(this.msg);
-    const decoder = new TextDecoder('utf-8');
-    const text = decoder.decode(utf8);
+    // Truncate message to maximum length (256 characters)
+    const text =
+      this.msg.length > YGOProStocChat.MAX_LENGTH
+        ? this.msg.substring(0, YGOProStocChat.MAX_LENGTH)
+        : this.msg;
 
     // Convert to UTF-16LE manually
     const utf16 = new Uint16Array(text.length + 1); // +1 for null terminator

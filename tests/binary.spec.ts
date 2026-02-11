@@ -268,7 +268,7 @@ describe('Binary Serialization', () => {
 
   describe('UTF-16 strings', () => {
     class Utf16String {
-      @BinaryField('utf16', 0, 20)
+      @BinaryField('utf16', 0, 10) // 10 characters = 20 bytes
       name: string;
     }
 
@@ -278,7 +278,7 @@ describe('Binary Serialization', () => {
 
       const data = toBinaryFields(obj);
 
-      expect(data.length).toBe(20);
+      expect(data.length).toBe(20); // 10 characters = 20 bytes
       // UTF-16LE encoding
       expect(data[0]).toBe('H'.charCodeAt(0));
       expect(data[1]).toBe(0);
@@ -295,7 +295,7 @@ describe('Binary Serialization', () => {
     });
 
     it('should decode UTF-16 strings correctly', () => {
-      const data = new Uint8Array(20);
+      const data = new Uint8Array(20); // 10 characters = 20 bytes
       const view = new DataView(data.buffer);
       const text = 'Test';
       for (let i = 0; i < text.length; i++) {
@@ -309,7 +309,7 @@ describe('Binary Serialization', () => {
     });
 
     it('should handle null-terminated UTF-16 strings', () => {
-      const data = new Uint8Array(20);
+      const data = new Uint8Array(20); // 10 characters = 20 bytes
       const view = new DataView(data.buffer);
       view.setUint16(0, 'A'.charCodeAt(0), true);
       view.setUint16(2, 'B'.charCodeAt(0), true);
