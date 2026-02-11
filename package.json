@@ -1,7 +1,7 @@
 {
   "name": "ygopro-msg-encode",
   "description": "TS lib for encode / decode YGOPro proto",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
