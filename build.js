@@ -53,6 +53,8 @@ async function buildOne(format, options) {
     outfile,
     bundle: true,
     sourcemap: true,
+    keepNames: true,
+    minifyIdentifiers: false,
     format, // 'cjs' | 'esm'
     platform: isCjs ? 'node' : 'neutral',
     target: isCjs ? 'es2021' : 'esnext',
