@@ -1,12 +1,14 @@
 import { YGOProCtosBase } from '../base';
 
+const CTOS_CHAT_MAX_LENGTH = 256;
+
 // CTOS_CHAT: uint16_t array (UTF-16 string)
 // Variable length: sends actual content + null terminator if not full
 // Maximum length: 256 characters (LEN_CHAT_MSG in YGOPro)
 // Client typically limits to 255 characters (setMax(LEN_CHAT_MSG - 1))
 export class YGOProCtosChat extends YGOProCtosBase {
   static identifier = 0x16;
-  static readonly MAX_LENGTH = 256;
+  static readonly MAX_LENGTH = CTOS_CHAT_MAX_LENGTH;
 
   msg: string;
 
@@ -25,8 +27,8 @@ export class YGOProCtosChat extends YGOProCtosBase {
   toPayload(): Uint8Array {
     // Truncate message to maximum length (256 characters)
     const text =
-      this.msg.length > YGOProCtosChat.MAX_LENGTH
-        ? this.msg.substring(0, YGOProCtosChat.MAX_LENGTH)
+      this.msg.length > CTOS_CHAT_MAX_LENGTH
+        ? this.msg.substring(0, CTOS_CHAT_MAX_LENGTH)
         : this.msg;
 
     // Convert to UTF-16LE manually

@@ -1,12 +1,15 @@
 import { YGOProCtosBase } from '../base';
 
+const CTOS_EXTERNAL_ADDRESS_MAX_HOSTNAME_LENGTH = 256;
+
 // CTOS_EXTERNAL_ADDRESS
 // uint32_t real_ip; (IPv4 address, BE, always 0 in normal client)
 // uint16_t hostname[256]; (UTF-16 string, variable length)
 // Maximum hostname length: 256 characters (LEN_HOSTNAME in YGOPro)
 export class YGOProCtosExternalAddress extends YGOProCtosBase {
   static identifier = 0x17;
-  static readonly MAX_HOSTNAME_LENGTH = 256;
+  static readonly MAX_LENGTH = CTOS_EXTERNAL_ADDRESS_MAX_HOSTNAME_LENGTH;
+  static readonly MAX_HOSTNAME_LENGTH = CTOS_EXTERNAL_ADDRESS_MAX_HOSTNAME_LENGTH;
 
   real_ip: string; // IPv4 address as string (e.g., "127.0.0.1" or "::ffff:127.0.0.1")
   hostname: string;
@@ -72,10 +75,10 @@ export class YGOProCtosExternalAddress extends YGOProCtosBase {
   toPayload(): Uint8Array {
     // Truncate hostname to maximum length (256 characters)
     const text =
-      this.hostname.length > YGOProCtosExternalAddress.MAX_HOSTNAME_LENGTH
+      this.hostname.length > CTOS_EXTERNAL_ADDRESS_MAX_HOSTNAME_LENGTH
         ? this.hostname.substring(
             0,
-            YGOProCtosExternalAddress.MAX_HOSTNAME_LENGTH,
+            CTOS_EXTERNAL_ADDRESS_MAX_HOSTNAME_LENGTH,
           )
         : this.hostname;
 
