@@ -1,11 +1,13 @@
 import { YGOProMsgBase } from './base';
 
-export abstract class YGOProMsgResponseBase extends YGOProMsgBase {
+export class YGOProMsgResponseBase extends YGOProMsgBase {
   defaultResponse(): Uint8Array | undefined {
     return undefined;
   }
 
-  abstract responsePlayer(): number;
+  responsePlayer(): number {
+    return 0;
+  }
 
   getSendTargets(): number[] {
     return [this.responsePlayer()];
