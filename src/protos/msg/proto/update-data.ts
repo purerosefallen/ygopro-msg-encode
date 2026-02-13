@@ -150,8 +150,4 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
 
     return result;
   }
-
-  getSendTargets(): number[] {
-    return [];
-  }
 }
