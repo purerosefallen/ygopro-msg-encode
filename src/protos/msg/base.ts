@@ -1,5 +1,9 @@
 import { PayloadBase } from '../../proto-base/payload-base';
 import { NetPlayerType } from '../network-enums';
+import {
+  RequireQueryCardLocation,
+  RequireQueryLocation,
+} from './query-location';
 
 // 常用的发送目标常量
 export const SEND_TO_PLAYERS: number[] = [0, 1];
@@ -56,5 +60,13 @@ export class YGOProMsgBase extends PayloadBase {
 
   getSendTargets(): number[] {
     return SEND_TO_ALL;
+  }
+
+  getRequireRefreshZones(): RequireQueryLocation[] {
+    return [];
+  }
+
+  getRequireRefreshCards(): RequireQueryCardLocation[] {
+    return [];
   }
 }

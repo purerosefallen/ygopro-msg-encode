@@ -1,6 +1,7 @@
 import { BinaryField } from '../../../binary/binary-meta';
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
 import { YGOProMsgBase } from '../base';
+import { RequireQueryCardLocation } from '../query-location';
 
 export class YGOProMsgPosChange_CardLocation {
   @BinaryField('u8', 0)
@@ -24,4 +25,20 @@ export class YGOProMsgPosChange extends YGOProMsgBase {
 
   @BinaryField('u8', 4)
   currentPosition: number;
+
+  getRequireRefreshCards(): RequireQueryCardLocation[] {
+    const shouldRefresh =
+      (this.previousPosition & OcgcoreCommonConstants.POS_FACEDOWN) !== 0 &&
+      (this.currentPosition & OcgcoreCommonConstants.POS_FACEUP) !== 0;
+    if (!shouldRefresh) {
+      return [];
+    }
+    return [
+      {
+        player: this.card.controller,
+        location: this.card.location,
+        sequence: this.card.sequence,
+      },
+    ];
+  }
 }

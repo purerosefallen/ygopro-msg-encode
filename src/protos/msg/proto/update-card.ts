@@ -3,6 +3,7 @@ import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
 import { NetPlayerType } from '../../network-enums';
 import { YGOProMsgBase } from '../base';
 import { CardQuery } from '../../common/card-query';
+import { RequireQueryCardLocation } from '../query-location';
 
 // MSG_UPDATE_CARD 的结构：更新单张卡片的信息
 export class YGOProMsgUpdateCard extends YGOProMsgBase {
@@ -116,5 +117,15 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
 
   getSendTargets(): number[] {
     return [];
+  }
+
+  getRequireRefreshCards(): RequireQueryCardLocation[] {
+    return [
+      {
+        player: this.controller,
+        location: this.location,
+        sequence: this.sequence,
+      },
+    ];
   }
 }

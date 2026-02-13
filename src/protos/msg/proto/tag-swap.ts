@@ -1,5 +1,6 @@
 import { BinaryField } from '../../../binary/binary-meta';
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
+import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
 import { YGOProMsgBase } from '../base';
 
 export class YGOProMsgTagSwap extends YGOProMsgBase {
@@ -44,5 +45,16 @@ export class YGOProMsgTagSwap extends YGOProMsgBase {
 
   teammateView(): this {
     return this.opponentView();
+  }
+
+  getRequireRefreshZones() {
+    const location =
+      OcgcoreScriptConstants.LOCATION_MZONE |
+      OcgcoreScriptConstants.LOCATION_SZONE |
+      OcgcoreScriptConstants.LOCATION_HAND;
+    return [
+      { player: 0, location },
+      { player: 1, location },
+    ];
   }
 }

@@ -1,5 +1,6 @@
 import { BinaryField } from '../../../binary/binary-meta';
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
+import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
 import { YGOProMsgResponseBase } from '../with-response-base';
 import {
   IndexResponse,
@@ -301,5 +302,16 @@ export class YGOProMsgSelectIdleCmd extends YGOProMsgResponseBase {
     const view = new DataView(buffer.buffer);
     view.setUint32(0, (sequence << 16) | type, true);
     return buffer;
+  }
+
+  getRequireRefreshZones() {
+    const location =
+      OcgcoreScriptConstants.LOCATION_MZONE |
+      OcgcoreScriptConstants.LOCATION_SZONE |
+      OcgcoreScriptConstants.LOCATION_HAND;
+    return [
+      { player: 0, location },
+      { player: 1, location },
+    ];
   }
 }

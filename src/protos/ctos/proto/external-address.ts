@@ -9,7 +9,8 @@ const CTOS_EXTERNAL_ADDRESS_MAX_HOSTNAME_LENGTH = 256;
 export class YGOProCtosExternalAddress extends YGOProCtosBase {
   static identifier = 0x17;
   static readonly MAX_LENGTH = CTOS_EXTERNAL_ADDRESS_MAX_HOSTNAME_LENGTH;
-  static readonly MAX_HOSTNAME_LENGTH = CTOS_EXTERNAL_ADDRESS_MAX_HOSTNAME_LENGTH;
+  static readonly MAX_HOSTNAME_LENGTH =
+    CTOS_EXTERNAL_ADDRESS_MAX_HOSTNAME_LENGTH;
 
   real_ip: string; // IPv4 address as string (e.g., "127.0.0.1" or "::ffff:127.0.0.1")
   hostname: string;
@@ -76,10 +77,7 @@ export class YGOProCtosExternalAddress extends YGOProCtosBase {
     // Truncate hostname to maximum length (256 characters)
     const text =
       this.hostname.length > CTOS_EXTERNAL_ADDRESS_MAX_HOSTNAME_LENGTH
-        ? this.hostname.substring(
-            0,
-            CTOS_EXTERNAL_ADDRESS_MAX_HOSTNAME_LENGTH,
-          )
+        ? this.hostname.substring(0, CTOS_EXTERNAL_ADDRESS_MAX_HOSTNAME_LENGTH)
         : this.hostname;
 
     // Convert to UTF-16LE manually

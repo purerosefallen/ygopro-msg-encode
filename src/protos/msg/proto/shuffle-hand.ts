@@ -1,5 +1,6 @@
 import { BinaryField } from '../../../binary/binary-meta';
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
+import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
 import { YGOProMsgBase } from '../base';
 
 export class YGOProMsgShuffleHand extends YGOProMsgBase {
@@ -19,5 +20,14 @@ export class YGOProMsgShuffleHand extends YGOProMsgBase {
     const view = this.copy();
     view.cards = view.cards.map(() => 0);
     return view;
+  }
+
+  getRequireRefreshZones() {
+    return [
+      {
+        player: this.player,
+        location: OcgcoreScriptConstants.LOCATION_HAND,
+      },
+    ];
   }
 }

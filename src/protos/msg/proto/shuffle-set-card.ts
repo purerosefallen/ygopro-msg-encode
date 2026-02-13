@@ -1,5 +1,6 @@
 import { BinaryField } from '../../../binary/binary-meta';
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
+import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
 import { YGOProMsgBase } from '../base';
 
 export class YGOProMsgShuffleSetCard_CardLocation {
@@ -35,4 +36,21 @@ export class YGOProMsgShuffleSetCard extends YGOProMsgBase {
 
   @BinaryField(() => YGOProMsgShuffleSetCard_SetCardInfo, 2, (obj) => obj.count)
   cards: YGOProMsgShuffleSetCard_SetCardInfo[];
+
+  getRequireRefreshZones() {
+    let location = 0;
+    if (this.location === OcgcoreScriptConstants.LOCATION_MZONE) {
+      location = OcgcoreScriptConstants.LOCATION_MZONE;
+    }
+    if (this.location === OcgcoreScriptConstants.LOCATION_SZONE) {
+      location = OcgcoreScriptConstants.LOCATION_SZONE;
+    }
+    if (location === 0) {
+      return [];
+    }
+    return [
+      { player: 0, location },
+      { player: 1, location },
+    ];
+  }
 }

@@ -3,6 +3,7 @@ import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
 import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
 import { NetPlayerType } from '../../network-enums';
 import { YGOProMsgBase } from '../base';
+import { RequireQueryCardLocation } from '../query-location';
 
 export class YGOProMsgMove_CardLocation {
   @BinaryField('u8', 0)
@@ -96,5 +97,25 @@ export class YGOProMsgMove extends YGOProMsgBase {
       return this.copy();
     }
     return this.opponentView();
+  }
+
+  getRequireRefreshCards(): RequireQueryCardLocation[] {
+    const current = this.current;
+    const previous = this.previous;
+    const shouldRefresh =
+      current.location !== 0 &&
+      (current.location & OcgcoreScriptConstants.LOCATION_OVERLAY) === 0 &&
+      (current.location !== previous.location ||
+        current.controller !== previous.controller);
+    if (!shouldRefresh) {
+      return [];
+    }
+    return [
+      {
+        player: current.controller,
+        location: current.location,
+        sequence: current.sequence,
+      },
+    ];
   }
 }
