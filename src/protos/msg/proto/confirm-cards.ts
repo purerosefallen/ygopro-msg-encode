@@ -31,19 +31,6 @@ export class YGOProMsgConfirmCards extends YGOProMsgBase {
   @BinaryField(() => YGOProMsgConfirmCards_CardInfo, 3, (obj) => obj.count)
   cards: YGOProMsgConfirmCards_CardInfo[];
 
-  // 对方视角可能需要隐藏卡片信息
-  opponentView(): this {
-    const view = this.copy();
-    view.cards = view.cards.map((card) => {
-      const c = { ...card };
-      if (!(c.code & 0x80000000)) {
-        c.code = 0;
-      }
-      return c;
-    });
-    return view;
-  }
-
   getSendTargets(): number[] {
     // 如果卡片在 DECK 位置，只发给 player
     if (this.cards.length > 0 && this.cards[0].location === 0x01) {

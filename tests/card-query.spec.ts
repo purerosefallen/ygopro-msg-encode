@@ -297,7 +297,7 @@ describe('MSG_UPDATE_CARD', () => {
     expect(teammateView.card.defense).toBe(2000);
   });
 
-  it('should hide facedown card not on field for teammate', () => {
+  it('should keep full data for teammate even when card is not on field', () => {
     const msg = new YGOProMsgUpdateCard();
     msg.controller = 0;
     msg.location = OcgcoreScriptConstants.LOCATION_REMOVED; // 除外区
@@ -311,9 +311,12 @@ describe('MSG_UPDATE_CARD', () => {
 
     const teammateView = msg.teammateView();
 
-    // 除外区里侧，队友也看不到
-    expect(teammateView.card.flags).toBe(OcgcoreCommonConstants.QUERY_CODE);
-    expect(teammateView.card.code).toBe(0);
+    // TAG 模式下 RefreshSingle 会把完整 UPDATE_CARD 发给同队玩家
+    expect(teammateView.card.flags).toBe(
+      OcgcoreCommonConstants.QUERY_CODE | OcgcoreCommonConstants.QUERY_POSITION,
+    );
+    expect(teammateView.card.code).toBe(12345);
+    expect(teammateView.card.position).toBe(OcgcoreCommonConstants.POS_FACEDOWN);
   });
 
   it('should use controller field in playerView', () => {

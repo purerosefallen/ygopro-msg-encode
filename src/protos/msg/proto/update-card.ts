@@ -1,5 +1,4 @@
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
-import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
 import { NetPlayerType } from '../../network-enums';
 import { YGOProMsgBase } from '../base';
 import { CardQuery, serializeCardQuery } from '../../common/card-query';
@@ -31,16 +30,9 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
   }
 
   teammateView(): this {
-    // TAG 决斗中，队友的视角规则：
-    // - 场上卡片 (LOCATION_ONFIELD)：队友可以看到己方盖放的卡片
-    // - 其他位置：和对手视角相同（根据 tag_duel.cpp RefreshSingle）
-    if (this.location & OcgcoreScriptConstants.LOCATION_ONFIELD) {
-      // 场上卡片，队友可以看到完整数据
-      return this.copy();
-    } else {
-      // 非场上卡片，使用对手视角
-      return this.opponentView();
-    }
+    // TAG 决斗中，RefreshSingle 总是先把完整 UPDATE_CARD 发给同队玩家
+    // （包括场上背面、手牌/卡组等非公开区域）
+    return this.copy();
   }
 
   playerView(playerId: number): this {
