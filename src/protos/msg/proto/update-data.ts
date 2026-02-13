@@ -152,7 +152,6 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
   }
 
   getSendTargets(): number[] {
-    // RefreshMzone/RefreshSzone/RefreshHand 等发送顺序：player -> 1-player -> observers
-    return [this.player, 1 - this.player, NetPlayerType.OBSERVER];
+    return [];
   }
 }
