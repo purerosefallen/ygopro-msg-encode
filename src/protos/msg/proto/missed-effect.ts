@@ -5,21 +5,24 @@ import { YGOProMsgBase } from '../base';
 export class YGOProMsgMissedEffect extends YGOProMsgBase {
   static identifier = OcgcoreCommonConstants.MSG_MISSED_EFFECT;
 
-  /**
-   * ocgcore (ygopro-core) sends:
-   *   - uint32: handler card info_location (controller/location/sequence/position packed)
-   *   - uint32: handler card code
-   *
-   * See ygopro-core/processor.cpp::field::break_effect()
-   */
-  @BinaryField('u32', 0)
+  @BinaryField('u8', 0)
+  controller: number;
+
+  @BinaryField('u8', 1)
   location: number;
 
-  @BinaryField('u32', 4)
+  @BinaryField('u8', 2)
+  sequence: number;
+
+  @BinaryField('u8', 3)
+  position: number;
+
+  @BinaryField('i32', 4)
   code: number;
 
   getSendTargets(): number[] {
-    // Core does not include a target player byte; this is a broadcast stoc message.
-    return [0, 1];
+    // single_duel.cpp: player = pbuf[0], then only send to players[player].
+    // pbuf[0] is the low byte of get_info_location(), i.e. controller.
+    return [this.controller];
   }
 }
