@@ -118,6 +118,19 @@ describe('YGOPro MSG Serialization', () => {
       expect(opponentView.cards[1]).toBe(0x80000000 | 67890); // public
     });
 
+    it('should not mutate original MSG_DRAW in opponentView', () => {
+      const msg = new YGOProMsgDraw();
+      msg.player = 0;
+      msg.count = 2;
+      msg.cards = [12345, 0x80000000 | 67890];
+
+      const opponentView = msg.opponentView();
+
+      expect(opponentView).not.toBe(msg);
+      expect(msg.cards).toEqual([12345, 0x80000000 | 67890]);
+      expect(opponentView.cards).toEqual([0, 0x80000000 | 67890]);
+    });
+
     it('should serialize and deserialize MSG_SHUFFLE_HAND', () => {
       const msg = new YGOProMsgShuffleHand();
       msg.player = 1;
@@ -181,6 +194,24 @@ describe('YGOPro MSG Serialization', () => {
 
       expect(opponentView.cards[0].code).toBe(0); // hidden
       expect(opponentView.cards[1].code).toBe(0x80000000 | 67890); // public
+    });
+
+    it('should not mutate original MSG_CONFIRM_DECKTOP in opponentView', () => {
+      const msg = new YGOProMsgConfirmDeckTop();
+      msg.player = 0;
+      msg.count = 2;
+      msg.cards = [
+        { code: 12345, controller: 0, location: 1, sequence: 0 },
+        { code: 0x80000000 | 67890, controller: 0, location: 1, sequence: 1 },
+      ];
+
+      const opponentView = msg.opponentView();
+
+      expect(opponentView).not.toBe(msg);
+      expect(msg.cards[0].code).toBe(12345);
+      expect(msg.cards[1].code).toBe(0x80000000 | 67890);
+      expect(opponentView.cards[0].code).toBe(0);
+      expect(opponentView.cards[1].code).toBe(0x80000000 | 67890);
     });
   });
 
