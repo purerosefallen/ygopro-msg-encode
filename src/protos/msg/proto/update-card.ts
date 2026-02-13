@@ -2,7 +2,7 @@ import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
 import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
 import { NetPlayerType } from '../../network-enums';
 import { YGOProMsgBase } from '../base';
-import { CardQuery } from '../../common/card-query';
+import { CardQuery, serializeCardQuery } from '../../common/card-query';
 import { RequireQueryCardLocation } from '../query-location';
 
 // MSG_UPDATE_CARD 的结构：更新单张卡片的信息
@@ -95,7 +95,7 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
   }
 
   toPayload(): Uint8Array {
-    const cardPayload = this.card?.toPayload() || new Uint8Array(4); // 至少包含 flags
+    const cardPayload = serializeCardQuery(this.card); // 至少包含 flags
     const length = 4 + cardPayload.length; // 长度字段本身 + 查询数据
 
     const result = new Uint8Array(4 + length);

@@ -2,7 +2,7 @@ import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
 import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
 import { NetPlayerType } from '../../network-enums';
 import { YGOProMsgBase } from '../base';
-import { CardQuery } from '../../common/card-query';
+import { CardQuery, serializeCardQuery } from '../../common/card-query';
 
 // MSG_UPDATE_DATA 的结构：更新某个位置所有卡片的信息
 export class YGOProMsgUpdateData extends YGOProMsgBase {
@@ -126,7 +126,7 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
 
     const cardPayloads: Uint8Array[] = [];
     for (const card of this.cards || []) {
-      const payload = card.toPayload();
+      const payload = serializeCardQuery(card);
       cardPayloads.push(payload);
       totalSize += 4 + payload.length; // 长度字段 + 数据
     }
