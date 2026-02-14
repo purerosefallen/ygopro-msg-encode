@@ -8,6 +8,9 @@ import {
   YGOProMsgShuffleExtra,
   YGOProMsgShuffleHand,
   YGOProMsgTagSwap,
+  YGOProMsgSelectCard,
+  YGOProMsgSelectTribute,
+  YGOProMsgSelectUnselectCard,
   YGOProMsgConfirmDeckTop,
 } from '../src/protos/msg/proto';
 import { YGOProMessages } from '../src/protos/msg/registry';
@@ -242,6 +245,81 @@ describe('YGOPro MSG Serialization', () => {
       expect(teammateView.topCode).toBe(556677);
       expect(teammateView.handCards).toEqual([0, 0x80000000 | 22222]);
       expect(teammateView.extraCards).toEqual([0, 0x80000000 | 44444]);
+    });
+  });
+
+  describe('Selection visibility masking', () => {
+    it('should mask by playerView in MSG_SELECT_CARD', () => {
+      const msg = new YGOProMsgSelectCard();
+      msg.player = 0;
+      msg.cancelable = 1;
+      msg.min = 1;
+      msg.max = 1;
+      msg.count = 2;
+      msg.cards = [
+        { code: 11111, controller: 0, location: 4, sequence: 0, subsequence: 0 },
+        { code: 22222, controller: 1, location: 4, sequence: 0, subsequence: 0 },
+      ];
+
+      const player0View = msg.playerView(0);
+      const player1View = msg.playerView(1);
+
+      expect(player0View.cards[0].code).toBe(11111);
+      expect(player0View.cards[1].code).toBe(0);
+      expect(player1View.cards[0].code).toBe(0);
+      expect(player1View.cards[1].code).toBe(22222);
+    });
+
+    it('should mask by playerView in MSG_SELECT_TRIBUTE', () => {
+      const msg = new YGOProMsgSelectTribute();
+      msg.player = 1;
+      msg.cancelable = 1;
+      msg.min = 1;
+      msg.max = 1;
+      msg.count = 2;
+      msg.cards = [
+        { code: 33333, controller: 1, location: 4, sequence: 1, releaseParam: 0 },
+        { code: 44444, controller: 0, location: 4, sequence: 2, releaseParam: 0 },
+      ];
+
+      const player1View = msg.playerView(1);
+      const player0View = msg.playerView(0);
+
+      expect(player1View.cards[0].code).toBe(33333);
+      expect(player1View.cards[1].code).toBe(0);
+      expect(player0View.cards[0].code).toBe(0);
+      expect(player0View.cards[1].code).toBe(44444);
+    });
+
+    it('should mask by playerView in MSG_SELECT_UNSELECT_CARD', () => {
+      const msg = new YGOProMsgSelectUnselectCard();
+      msg.player = 0;
+      msg.finishable = 1;
+      msg.cancelable = 1;
+      msg.min = 1;
+      msg.max = 2;
+      msg.selectableCount = 2;
+      msg.selectableCards = [
+        { code: 55555, controller: 0, location: 4, sequence: 0, subsequence: 0 },
+        { code: 66666, controller: 1, location: 4, sequence: 1, subsequence: 0 },
+      ];
+      msg.unselectableCount = 2;
+      msg.unselectableCards = [
+        { code: 77777, controller: 0, location: 2, sequence: 0, subsequence: 0 },
+        { code: 88888, controller: 1, location: 2, sequence: 1, subsequence: 0 },
+      ];
+
+      const player0View = msg.playerView(0);
+      const player1View = msg.playerView(1);
+
+      expect(player0View.selectableCards[0].code).toBe(55555);
+      expect(player0View.selectableCards[1].code).toBe(0);
+      expect(player0View.unselectableCards[0].code).toBe(77777);
+      expect(player0View.unselectableCards[1].code).toBe(0);
+      expect(player1View.selectableCards[0].code).toBe(0);
+      expect(player1View.selectableCards[1].code).toBe(66666);
+      expect(player1View.unselectableCards[0].code).toBe(0);
+      expect(player1View.unselectableCards[1].code).toBe(88888);
     });
   });
 

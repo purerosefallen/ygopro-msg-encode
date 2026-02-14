@@ -45,6 +45,21 @@ export class YGOProMsgSelectCard extends YGOProMsgResponseBase {
   @BinaryField(() => YGOProMsgSelectCard_CardInfo, 5, (obj) => obj.count)
   cards: YGOProMsgSelectCard_CardInfo[];
 
+  private maskedView(playerId: number): this {
+    // 参考 single_duel.cpp/tag_duel.cpp：对非当前视角玩家控制的候选卡，code 置 0
+    const view = this.copy();
+    for (const card of view.cards || []) {
+      if (card.controller !== playerId) {
+        card.code = 0;
+      }
+    }
+    return view;
+  }
+
+  playerView(playerId: number): this {
+    return this.maskedView(playerId);
+  }
+
   responsePlayer() {
     return this.player;
   }
