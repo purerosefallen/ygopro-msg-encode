@@ -26,4 +26,9 @@ export class YGOProMsgDraw extends YGOProMsgBase {
     });
     return view;
   }
+
+  teammateView(): this {
+    // TAG 决斗中，队友与对手对抽卡信息使用同样的遮蔽规则
+    return this.opponentView();
+  }
 }

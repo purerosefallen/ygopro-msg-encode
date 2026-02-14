@@ -21,14 +21,15 @@ export class YGOProMsgTagSwap extends YGOProMsgBase {
   @BinaryField('u8', 4)
   handCount: number;
 
-  @BinaryField('i32', 5, (obj) => obj.handCount)
+  // 对应 ocgcore::field::tag_swap 写入的 topcode（在 deck_reversed 时可能非 0）
+  @BinaryField('i32', 5)
+  topCode: number;
+
+  @BinaryField('i32', 9, (obj) => obj.handCount)
   handCards: number[];
 
-  @BinaryField('i32', (obj) => 5 + obj.handCount * 4, (obj) => obj.extraCount)
+  @BinaryField('i32', (obj) => 9 + obj.handCount * 4, (obj) => obj.extraCount)
   extraCards: number[];
-
-  @BinaryField('u32', (obj) => 5 + obj.handCount * 4 + obj.extraCount * 4)
-  mzoneFlags: number;
 
   // 对方和队友视角需要隐藏手牌和额外卡组信息
   opponentView(): this {

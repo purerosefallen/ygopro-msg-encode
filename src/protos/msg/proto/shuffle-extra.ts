@@ -21,4 +21,8 @@ export class YGOProMsgShuffleExtra extends YGOProMsgBase {
     view.cards = view.cards.map(() => 0);
     return view;
   }
+
+  teammateView(): this {
+    return this.opponentView();
+  }
 }

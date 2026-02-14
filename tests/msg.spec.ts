@@ -5,7 +5,9 @@ import {
   YGOProMsgWin,
   YGOProMsgNewTurn,
   YGOProMsgDamage,
+  YGOProMsgShuffleExtra,
   YGOProMsgShuffleHand,
+  YGOProMsgTagSwap,
   YGOProMsgConfirmDeckTop,
 } from '../src/protos/msg/proto';
 import { YGOProMessages } from '../src/protos/msg/registry';
@@ -131,6 +133,17 @@ describe('YGOPro MSG Serialization', () => {
       expect(opponentView.cards).toEqual([0, 0x80000000 | 67890]);
     });
 
+    it('should implement teammateView for MSG_DRAW', () => {
+      const msg = new YGOProMsgDraw();
+      msg.player = 0;
+      msg.count = 2;
+      msg.cards = [12345, 0x80000000 | 67890];
+
+      const teammateView = msg.teammateView();
+
+      expect(teammateView.cards).toEqual([0, 0x80000000 | 67890]);
+    });
+
     it('should serialize and deserialize MSG_SHUFFLE_HAND', () => {
       const msg = new YGOProMsgShuffleHand();
       msg.player = 1;
@@ -157,6 +170,79 @@ describe('YGOPro MSG Serialization', () => {
 
       expect(opponentView.cards).toEqual([0, 0, 0]);
     });
+
+    it('should implement teammateView for MSG_SHUFFLE_HAND', () => {
+      const msg = new YGOProMsgShuffleHand();
+      msg.player = 0;
+      msg.count = 3;
+      msg.cards = [100, 200, 300];
+
+      const teammateView = msg.teammateView();
+
+      expect(teammateView.cards).toEqual([0, 0, 0]);
+    });
+
+    it('should implement teammateView for MSG_SHUFFLE_EXTRA', () => {
+      const msg = new YGOProMsgShuffleExtra();
+      msg.player = 1;
+      msg.count = 3;
+      msg.cards = [100, 200, 300];
+
+      const teammateView = msg.teammateView();
+
+      expect(teammateView.cards).toEqual([0, 0, 0]);
+    });
+
+    it('should serialize and deserialize MSG_TAG_SWAP with topCode', () => {
+      const msg = new YGOProMsgTagSwap();
+      msg.player = 0;
+      msg.mzoneCount = 30;
+      msg.extraCount = 2;
+      msg.pzoneCount = 1;
+      msg.handCount = 2;
+      msg.topCode = 123456;
+      msg.handCards = [11111, 0x80000000 | 22222];
+      msg.extraCards = [33333, 0x80000000 | 44444];
+
+      const data = msg.toPayload();
+      expect(data.length).toBe(1 + 9 + 2 * 4 + 2 * 4);
+      expect(data[0]).toBe(OcgcoreCommonConstants.MSG_TAG_SWAP);
+
+      const decoded = new YGOProMsgTagSwap();
+      decoded.fromPayload(data);
+
+      expect(decoded.player).toBe(0);
+      expect(decoded.mzoneCount).toBe(30);
+      expect(decoded.extraCount).toBe(2);
+      expect(decoded.pzoneCount).toBe(1);
+      expect(decoded.handCount).toBe(2);
+      expect(decoded.topCode).toBe(123456);
+      expect(decoded.handCards).toEqual([11111, 0x80000000 | 22222]);
+      expect(decoded.extraCards).toEqual([33333, 0x80000000 | 44444]);
+    });
+
+    it('should implement opponentView and teammateView for MSG_TAG_SWAP', () => {
+      const msg = new YGOProMsgTagSwap();
+      msg.player = 1;
+      msg.mzoneCount = 35;
+      msg.extraCount = 2;
+      msg.pzoneCount = 0;
+      msg.handCount = 2;
+      msg.topCode = 556677;
+      msg.handCards = [11111, 0x80000000 | 22222];
+      msg.extraCards = [33333, 0x80000000 | 44444];
+
+      const opponentView = msg.opponentView();
+      const teammateView = msg.teammateView();
+
+      expect(opponentView.topCode).toBe(556677);
+      expect(opponentView.handCards).toEqual([0, 0x80000000 | 22222]);
+      expect(opponentView.extraCards).toEqual([0, 0x80000000 | 44444]);
+
+      expect(teammateView.topCode).toBe(556677);
+      expect(teammateView.handCards).toEqual([0, 0x80000000 | 22222]);
+      expect(teammateView.extraCards).toEqual([0, 0x80000000 | 44444]);
+    });
   });
 
   describe('MSG types with nested objects', () => {
@@ -181,7 +267,7 @@ describe('YGOPro MSG Serialization', () => {
       expect(decoded.cards[1].code).toBe(67890);
     });
 
-    it('should implement opponentView for MSG_CONFIRM_DECKTOP', () => {
+    it('should keep card codes in opponentView for MSG_CONFIRM_DECKTOP', () => {
       const msg = new YGOProMsgConfirmDeckTop();
       msg.player = 0;
       msg.count = 2;
@@ -192,8 +278,8 @@ describe('YGOPro MSG Serialization', () => {
 
       const opponentView = msg.opponentView();
 
-      expect(opponentView.cards[0].code).toBe(0); // hidden
-      expect(opponentView.cards[1].code).toBe(0x80000000 | 67890); // public
+      expect(opponentView.cards[0].code).toBe(12345);
+      expect(opponentView.cards[1].code).toBe(0x80000000 | 67890);
     });
 
     it('should not mutate original MSG_CONFIRM_DECKTOP in opponentView', () => {
@@ -210,7 +296,7 @@ describe('YGOPro MSG Serialization', () => {
       expect(opponentView).not.toBe(msg);
       expect(msg.cards[0].code).toBe(12345);
       expect(msg.cards[1].code).toBe(0x80000000 | 67890);
-      expect(opponentView.cards[0].code).toBe(0);
+      expect(opponentView.cards[0].code).toBe(12345);
       expect(opponentView.cards[1].code).toBe(0x80000000 | 67890);
     });
   });

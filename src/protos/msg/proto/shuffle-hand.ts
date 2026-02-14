@@ -22,6 +22,10 @@ export class YGOProMsgShuffleHand extends YGOProMsgBase {
     return view;
   }
 
+  teammateView(): this {
+    return this.opponentView();
+  }
+
   getRequireRefreshZones() {
     return [
       {
