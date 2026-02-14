@@ -5,6 +5,7 @@ import {
   YGOProMsgWin,
   YGOProMsgNewTurn,
   YGOProMsgDamage,
+  YGOProMsgChaining,
   YGOProMsgShuffleExtra,
   YGOProMsgShuffleHand,
   YGOProMsgTagSwap,
@@ -82,6 +83,40 @@ describe('YGOPro MSG Serialization', () => {
 
       expect(decoded.player).toBe(0);
       expect(decoded.value).toBe(1000);
+    });
+
+    it('should serialize and deserialize MSG_CHAINING', () => {
+      const msg = new YGOProMsgChaining();
+      msg.code = 445566;
+      msg.controller = 1;
+      msg.location = 4;
+      msg.sequence = 2;
+      msg.subsequence = 0;
+      msg.chainCardLocation = {
+        controller: 0,
+        location: 8,
+        sequence: 1,
+      };
+      msg.desc = 123456;
+      msg.chainCount = 3;
+
+      const data = msg.toPayload();
+      expect(data.length).toBe(17); // identifier + 16 bytes
+      expect(data[0]).toBe(OcgcoreCommonConstants.MSG_CHAINING);
+
+      const decoded = new YGOProMsgChaining();
+      decoded.fromPayload(data);
+
+      expect(decoded.code).toBe(445566);
+      expect(decoded.controller).toBe(1);
+      expect(decoded.location).toBe(4);
+      expect(decoded.sequence).toBe(2);
+      expect(decoded.subsequence).toBe(0);
+      expect(decoded.chainCardLocation.controller).toBe(0);
+      expect(decoded.chainCardLocation.location).toBe(8);
+      expect(decoded.chainCardLocation.sequence).toBe(1);
+      expect(decoded.desc).toBe(123456);
+      expect(decoded.chainCount).toBe(3);
     });
 
     it('should validate MSG identifier', () => {
