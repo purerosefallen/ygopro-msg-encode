@@ -33,9 +33,12 @@ export class YGOProMsgBattle extends YGOProMsgBase {
   @BinaryField(() => YGOProMsgBattle_CardStats, 0)
   attacker: YGOProMsgBattle_CardStats;
 
-  @BinaryField(() => YGOProMsgBattle_CardStats, 12)
+  @BinaryField('u8', 12)
+  attackerBattleState: number;
+
+  @BinaryField(() => YGOProMsgBattle_CardStats, 13)
   defender: YGOProMsgBattle_CardStats;
 
-  @BinaryField('u8', 24)
-  battleDamageCalc: number;
+  @BinaryField('u8', 25)
+  defenderBattleState: number;
 }

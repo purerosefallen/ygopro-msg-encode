@@ -3,6 +3,7 @@ import {
   YGOProMsgDraw,
   YGOProMsgHint,
   YGOProMsgWin,
+  YGOProMsgBattle,
   YGOProMsgNewTurn,
   YGOProMsgDamage,
   YGOProMsgChaining,
@@ -140,6 +141,44 @@ describe('YGOPro MSG Serialization', () => {
       expect(decoded.location).toBe(4);
       expect(decoded.sequence).toBe(2);
       expect(decoded.position).toBe(2);
+    });
+
+    it('should serialize and deserialize MSG_BATTLE', () => {
+      const msg = new YGOProMsgBattle();
+      msg.attacker = {
+        location: { controller: 0, location: 4, sequence: 1, position: 1 },
+        atk: 2500,
+        def: 2000,
+      };
+      msg.attackerBattleState = 1;
+      msg.defender = {
+        location: { controller: 1, location: 4, sequence: 2, position: 1 },
+        atk: 1800,
+        def: 1200,
+      };
+      msg.defenderBattleState = 0;
+
+      const data = msg.toPayload();
+      expect(data.length).toBe(27); // identifier + 26 bytes
+      expect(data[0]).toBe(OcgcoreCommonConstants.MSG_BATTLE);
+
+      const decoded = new YGOProMsgBattle();
+      decoded.fromPayload(data);
+
+      expect(decoded.attacker.location.controller).toBe(0);
+      expect(decoded.attacker.location.location).toBe(4);
+      expect(decoded.attacker.location.sequence).toBe(1);
+      expect(decoded.attacker.location.position).toBe(1);
+      expect(decoded.attacker.atk).toBe(2500);
+      expect(decoded.attacker.def).toBe(2000);
+      expect(decoded.attackerBattleState).toBe(1);
+      expect(decoded.defender.location.controller).toBe(1);
+      expect(decoded.defender.location.location).toBe(4);
+      expect(decoded.defender.location.sequence).toBe(2);
+      expect(decoded.defender.location.position).toBe(1);
+      expect(decoded.defender.atk).toBe(1800);
+      expect(decoded.defender.def).toBe(1200);
+      expect(decoded.defenderBattleState).toBe(0);
     });
 
     it('should validate MSG identifier', () => {
