@@ -6,6 +6,7 @@ import {
   YGOProMsgNewTurn,
   YGOProMsgDamage,
   YGOProMsgChaining,
+  YGOProMsgSet,
   YGOProMsgShuffleExtra,
   YGOProMsgShuffleHand,
   YGOProMsgTagSwap,
@@ -117,6 +118,28 @@ describe('YGOPro MSG Serialization', () => {
       expect(decoded.chainCardLocation.sequence).toBe(1);
       expect(decoded.desc).toBe(123456);
       expect(decoded.chainCount).toBe(3);
+    });
+
+    it('should serialize and deserialize MSG_SET', () => {
+      const msg = new YGOProMsgSet();
+      msg.code = 765432;
+      msg.controller = 1;
+      msg.location = 4;
+      msg.sequence = 2;
+      msg.position = 2;
+
+      const data = msg.toPayload();
+      expect(data.length).toBe(9); // identifier + 8 bytes
+      expect(data[0]).toBe(OcgcoreCommonConstants.MSG_SET);
+
+      const decoded = new YGOProMsgSet();
+      decoded.fromPayload(data);
+
+      expect(decoded.code).toBe(765432);
+      expect(decoded.controller).toBe(1);
+      expect(decoded.location).toBe(4);
+      expect(decoded.sequence).toBe(2);
+      expect(decoded.position).toBe(2);
     });
 
     it('should validate MSG identifier', () => {

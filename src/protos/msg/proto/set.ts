@@ -8,8 +8,19 @@ export class YGOProMsgSet extends YGOProMsgBase {
   @BinaryField('i32', 0)
   code: number;
 
-  // MSG_SET 是盖放卡片，所有人都看不到 code（包括玩家自己）
-  // 服务器在发送前会将 code 清零
+  @BinaryField('u8', 4)
+  controller: number;
+
+  @BinaryField('u8', 5)
+  location: number;
+
+  @BinaryField('u8', 6)
+  sequence: number;
+
+  @BinaryField('u8', 7)
+  position: number;
+
+  // MSG_SET 的 code 在常见网络转发路径会被置 0
   opponentView(): this {
     const view = this.copy();
     view.code = 0;
