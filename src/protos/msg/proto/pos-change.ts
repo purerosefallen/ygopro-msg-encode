@@ -17,13 +17,16 @@ export class YGOProMsgPosChange_CardLocation {
 export class YGOProMsgPosChange extends YGOProMsgBase {
   static identifier = OcgcoreCommonConstants.MSG_POS_CHANGE;
 
-  @BinaryField(() => YGOProMsgPosChange_CardLocation, 0)
+  @BinaryField('i32', 0)
+  code: number;
+
+  @BinaryField(() => YGOProMsgPosChange_CardLocation, 4)
   card: YGOProMsgPosChange_CardLocation;
 
-  @BinaryField('u8', 3)
+  @BinaryField('u8', 7)
   previousPosition: number;
 
-  @BinaryField('u8', 4)
+  @BinaryField('u8', 8)
   currentPosition: number;
 
   getRequireRefreshCards(): RequireQueryCardLocation[] {

@@ -7,6 +7,7 @@ import {
   YGOProMsgNewTurn,
   YGOProMsgDamage,
   YGOProMsgChaining,
+  YGOProMsgPosChange,
   YGOProMsgSet,
   YGOProMsgShuffleExtra,
   YGOProMsgShuffleHand,
@@ -179,6 +180,32 @@ describe('YGOPro MSG Serialization', () => {
       expect(decoded.defender.atk).toBe(1800);
       expect(decoded.defender.def).toBe(1200);
       expect(decoded.defenderBattleState).toBe(0);
+    });
+
+    it('should serialize and deserialize MSG_POS_CHANGE', () => {
+      const msg = new YGOProMsgPosChange();
+      msg.code = 123123;
+      msg.card = {
+        controller: 1,
+        location: 4,
+        sequence: 3,
+      };
+      msg.previousPosition = 1;
+      msg.currentPosition = 8;
+
+      const data = msg.toPayload();
+      expect(data.length).toBe(10); // identifier + 9 bytes
+      expect(data[0]).toBe(OcgcoreCommonConstants.MSG_POS_CHANGE);
+
+      const decoded = new YGOProMsgPosChange();
+      decoded.fromPayload(data);
+
+      expect(decoded.code).toBe(123123);
+      expect(decoded.card.controller).toBe(1);
+      expect(decoded.card.location).toBe(4);
+      expect(decoded.card.sequence).toBe(3);
+      expect(decoded.previousPosition).toBe(1);
+      expect(decoded.currentPosition).toBe(8);
     });
 
     it('should validate MSG identifier', () => {
