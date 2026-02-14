@@ -17,12 +17,8 @@ export class YGOProMsgShuffleExtra extends YGOProMsgBase {
   // 对方视角需要隐藏额外卡组信息
   opponentView(): this {
     const view = this.copy();
-    view.cards = view.cards.map((card) => {
-      if (!(card & 0x80000000)) {
-        return 0;
-      }
-      return card;
-    });
+    // 根据 single_duel.cpp，对手视角下应该全部遮掩
+    view.cards = view.cards.map(() => 0);
     return view;
   }
 }

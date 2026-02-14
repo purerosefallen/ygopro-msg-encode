@@ -28,18 +28,7 @@ export class YGOProMsgConfirmExtraTop extends YGOProMsgBase {
   @BinaryField(() => YGOProMsgConfirmExtraTop_CardInfo, 2, (obj) => obj.count)
   cards: YGOProMsgConfirmExtraTop_CardInfo[];
 
-  // 对方视角可能需要隐藏卡片信息
-  opponentView(): this {
-    const view = this.copy();
-    view.cards = view.cards.map((card) => {
-      const c = { ...card };
-      if (!(c.code & 0x80000000)) {
-        c.code = 0;
-      }
-      return c;
-    });
-    return view;
-  }
-
-  // confirm-extratop 使用基类的 playerView (基于 player 字段)
+  // MSG_CONFIRM_EXTRATOP 在 single_duel.cpp 中不做遮掩，直接发给所有人
+  // ocgcore 通过 0x80000000 标记控制公开状态
+  // 因此使用基类的默认实现（不遮掩）
 }

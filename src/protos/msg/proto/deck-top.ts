@@ -14,14 +14,7 @@ export class YGOProMsgDeckTop extends YGOProMsgBase {
   @BinaryField('i32', 2)
   code: number;
 
-  // 对方视角可能需要隐藏卡片信息
-  opponentView(): this {
-    const view = this.copy();
-    if (!(view.code & 0x80000000)) {
-      view.code = 0;
-    }
-    return view;
-  }
-
-  // deck-top 使用基类的 playerView (基于 player 字段)
+  // MSG_DECK_TOP 在 single_duel.cpp 中不做遮掩，直接发给所有人
+  // ocgcore 通过 0x80000000 标记控制公开状态
+  // 因此使用基类的默认实现（不遮掩）
 }

@@ -33,7 +33,13 @@ export class YGOProMsgTagSwap extends YGOProMsgBase {
   // 对方和队友视角需要隐藏手牌和额外卡组信息
   opponentView(): this {
     const view = this.copy();
-    view.handCards = view.handCards.map(() => 0);
+    // 根据 tag_duel.cpp，手牌和额外卡组都只遮掩非公开的（没有 0x80000000 标记的）
+    view.handCards = view.handCards.map((card) => {
+      if (!(card & 0x80000000)) {
+        return 0;
+      }
+      return card;
+    });
     view.extraCards = view.extraCards.map((card) => {
       if (!(card & 0x80000000)) {
         return 0;
