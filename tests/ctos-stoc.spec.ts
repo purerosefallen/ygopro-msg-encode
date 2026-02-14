@@ -201,5 +201,65 @@ describe('CTOS/STOC Protocols', () => {
 
       expect(parsed).toBeUndefined();
     });
+
+    it('should parse concatenated CTOS payloads with getInstancesFromPayload', () => {
+      const p1 = new YGOProCtosHandResult();
+      p1.res = 1;
+      const p2 = new YGOProCtosHandResult();
+      p2.res = 2;
+
+      const b1 = p1.toFullPayload();
+      const b2 = p2.toFullPayload();
+      const combined = new Uint8Array(b1.length + b2.length);
+      combined.set(b1, 0);
+      combined.set(b2, b1.length);
+
+      const parsed = YGOProCtos.getInstancesFromPayload(combined);
+      expect(parsed).toHaveLength(2);
+      expect(parsed[0]).toBeInstanceOf(YGOProCtosHandResult);
+      expect(parsed[1]).toBeInstanceOf(YGOProCtosHandResult);
+      expect((parsed[0] as YGOProCtosHandResult).res).toBe(1);
+      expect((parsed[1] as YGOProCtosHandResult).res).toBe(2);
+    });
+
+    it('should stop when remaining CTOS data is shorter than offsets', () => {
+      const p1 = new YGOProCtosHandResult();
+      p1.res = 1;
+      const p2 = new YGOProCtosHandResult();
+      p2.res = 2;
+
+      const b1 = p1.toFullPayload();
+      const b2 = p2.toFullPayload();
+      const combined = new Uint8Array(b1.length + b2.length + 2);
+      combined.set(b1, 0);
+      combined.set(b2, b1.length);
+      combined.set([0xaa, 0xbb], b1.length + b2.length);
+
+      const parsed = YGOProCtos.getInstancesFromPayload(combined);
+      expect(parsed).toHaveLength(2);
+      expect((parsed[0] as YGOProCtosHandResult).res).toBe(1);
+      expect((parsed[1] as YGOProCtosHandResult).res).toBe(2);
+    });
+
+    it('should stop after first STOC payload if next one is invalid', () => {
+      const p1 = new YGOProStocErrorMsg();
+      p1.msg = 2;
+      p1.code = 0x1234;
+      const p2 = new YGOProStocErrorMsg();
+      p2.msg = 3;
+      p2.code = 0x5678;
+
+      const b1 = p1.toFullPayload();
+      const b2 = p2.toFullPayload().slice(0, 4);
+      const combined = new Uint8Array(b1.length + b2.length);
+      combined.set(b1, 0);
+      combined.set(b2, b1.length);
+
+      const parsed = YGOProStoc.getInstancesFromPayload(combined);
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0]).toBeInstanceOf(YGOProStocErrorMsg);
+      expect((parsed[0] as YGOProStocErrorMsg).msg).toBe(2);
+      expect((parsed[0] as YGOProStocErrorMsg).code).toBe(0x1234);
+    });
   });
 });

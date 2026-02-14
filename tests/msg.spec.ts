@@ -318,6 +318,49 @@ describe('YGOPro MSG Serialization', () => {
       const DrawClass = YGOProMessages.get(OcgcoreCommonConstants.MSG_DRAW);
       expect(DrawClass).toBe(YGOProMsgDraw);
     });
+
+    it('should parse concatenated MSG payloads with getInstancesFromPayload', () => {
+      const msg1 = new YGOProMsgWin();
+      msg1.player = 0;
+      msg1.type = 1;
+      const msg2 = new YGOProMsgNewTurn();
+      msg2.player = 1;
+
+      const b1 = msg1.toPayload();
+      const b2 = msg2.toPayload();
+      const combined = new Uint8Array(b1.length + b2.length);
+      combined.set(b1, 0);
+      combined.set(b2, b1.length);
+
+      const parsed = YGOProMessages.getInstancesFromPayload(combined);
+      expect(parsed).toHaveLength(2);
+      expect(parsed[0]).toBeInstanceOf(YGOProMsgWin);
+      expect(parsed[1]).toBeInstanceOf(YGOProMsgNewTurn);
+      expect((parsed[0] as YGOProMsgWin).player).toBe(0);
+      expect((parsed[0] as YGOProMsgWin).type).toBe(1);
+      expect((parsed[1] as YGOProMsgNewTurn).player).toBe(1);
+    });
+
+    it('should stop MSG parsing after one decode error', () => {
+      const msg1 = new YGOProMsgWin();
+      msg1.player = 0;
+      msg1.type = 1;
+      const invalidSecond = new Uint8Array([
+        OcgcoreCommonConstants.MSG_DAMAGE,
+        1,
+      ]);
+
+      const b1 = msg1.toPayload();
+      const combined = new Uint8Array(b1.length + invalidSecond.length);
+      combined.set(b1, 0);
+      combined.set(invalidSecond, b1.length);
+
+      const parsed = YGOProMessages.getInstancesFromPayload(combined);
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0]).toBeInstanceOf(YGOProMsgWin);
+      expect((parsed[0] as YGOProMsgWin).player).toBe(0);
+      expect((parsed[0] as YGOProMsgWin).type).toBe(1);
+    });
   });
 
   describe('playerView helper', () => {

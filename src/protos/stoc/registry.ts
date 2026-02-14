@@ -1,4 +1,4 @@
-import { RegistryBase } from '../../proto-base/registry-base';
+import { ProtoRegistryBase } from '../../proto-base/proto-registry-base';
 import { YGOProStocBase } from './base';
 import {
   YGOProStocGameMsg,
@@ -27,13 +27,7 @@ import {
   YGOProStocSrvproRoomlist,
 } from './proto';
 
-// STOC format: [length 2 bytes][identifier 1 byte][body]
-// identifierOffset: 2 (identifier is at byte 2, after the 2-byte length)
-// dataOffset: 3 (body starts at byte 3, after length + identifier)
-export const YGOProStoc = new RegistryBase(YGOProStocBase, {
-  identifierOffset: 2,
-  dataOffset: 3,
-});
+export const YGOProStoc = new ProtoRegistryBase(YGOProStocBase);
 
 YGOProStoc.register(YGOProStocGameMsg);
 YGOProStoc.register(YGOProStocErrorMsg);
