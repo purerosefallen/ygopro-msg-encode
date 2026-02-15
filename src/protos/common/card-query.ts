@@ -504,7 +504,28 @@ export function serializeCardQueryChunk(card?: Partial<CardQuery>): CardQueryChu
   }
 
   const payload = serializeCardQuery(card);
-  return { length: 4 + payload.length, payload };
+  const minimalLength = 4 + payload.length;
+  if (queryLength && queryLength > minimalLength) {
+    const padded = new Uint8Array(queryLength - 4);
+    padded.set(payload, 0);
+    return { length: queryLength, payload: padded };
+  }
+  return { length: minimalLength, payload };
+}
+
+function inferCardQueryChunkLength(source?: Partial<CardQuery>): number | undefined {
+  if (!source) {
+    return undefined;
+  }
+  if (typeof source.queryLength === 'number' && source.queryLength >= 4) {
+    return source.queryLength;
+  }
+  const flags = source.flags ?? 0;
+  if (flags === 0 && source.empty) {
+    return 4;
+  }
+  const payload = serializeCardQuery(source);
+  return 4 + payload.length;
 }
 
 export function createClearedCardQuery(
@@ -513,7 +534,7 @@ export function createClearedCardQuery(
   const card = new CardQuery();
   card.flags = 0;
   card.empty = true;
-  card.queryLength = source?.queryLength;
+  card.queryLength = inferCardQueryChunkLength(source);
   return card;
 }
 
@@ -524,6 +545,6 @@ export function createCodeHiddenCardQuery(
   card.flags = OcgcoreCommonConstants.QUERY_CODE;
   card.code = 0;
   card.empty = false;
-  card.queryLength = source?.queryLength;
+  card.queryLength = inferCardQueryChunkLength(source);
   return card;
 }

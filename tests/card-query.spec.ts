@@ -318,6 +318,43 @@ describe('MSG_UPDATE_CARD', () => {
     expect(opponentView.card.attack).toBe(3000);
   });
 
+  it('should preserve UPDATE_CARD chunk length after hiding without queryLength', () => {
+    const msg = new YGOProMsgUpdateCard();
+    msg.controller = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_MZONE;
+    msg.sequence = 0;
+
+    msg.card = new CardQuery();
+    msg.card.flags =
+      OcgcoreCommonConstants.QUERY_CODE |
+      OcgcoreCommonConstants.QUERY_POSITION |
+      OcgcoreCommonConstants.QUERY_ATTACK |
+      OcgcoreCommonConstants.QUERY_DEFENSE;
+    msg.card.code = 89631139;
+    msg.card.position = OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE;
+    msg.card.attack = 3000;
+    msg.card.defense = 2500;
+
+    const selfData = msg.toPayload();
+    const selfView = new DataView(
+      selfData.buffer,
+      selfData.byteOffset,
+      selfData.byteLength,
+    );
+    const selfChunkLen = selfView.getInt32(4, true);
+
+    const opponentData = msg.opponentView().toPayload();
+    const opponentView = new DataView(
+      opponentData.buffer,
+      opponentData.byteOffset,
+      opponentData.byteLength,
+    );
+    const opponentChunkLen = opponentView.getInt32(4, true);
+
+    expect(opponentData.length).toBe(selfData.length);
+    expect(opponentChunkLen).toBe(selfChunkLen);
+  });
+
   it('should allow teammate to see facedown card on field', () => {
     const msg = new YGOProMsgUpdateCard();
     msg.controller = 0;
@@ -640,6 +677,42 @@ describe('MSG_UPDATE_DATA', () => {
     expect(opponentView.cards[0].empty).toBe(true);
     expect(opponentView.cards[0].flags).toBe(0);
     expect(opponentView.cards[1].code).toBe(67890);
+  });
+
+  it('should preserve UPDATE_DATA chunk length after hiding without queryLength', () => {
+    const msg = new YGOProMsgUpdateData();
+    msg.player = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_HAND;
+    msg.cards = [];
+
+    const hiddenCard = new CardQuery();
+    hiddenCard.flags =
+      OcgcoreCommonConstants.QUERY_CODE |
+      OcgcoreCommonConstants.QUERY_POSITION |
+      OcgcoreCommonConstants.QUERY_ATTACK;
+    hiddenCard.code = 12345;
+    hiddenCard.position = 0; // 非公开手牌
+    hiddenCard.attack = 1000;
+    msg.cards.push(hiddenCard);
+
+    const selfData = msg.toPayload();
+    const selfView = new DataView(
+      selfData.buffer,
+      selfData.byteOffset,
+      selfData.byteLength,
+    );
+    const selfChunkLen = selfView.getInt32(3, true);
+
+    const opponentData = msg.opponentView().toPayload();
+    const opponentView = new DataView(
+      opponentData.buffer,
+      opponentData.byteOffset,
+      opponentData.byteLength,
+    );
+    const opponentChunkLen = opponentView.getInt32(3, true);
+
+    expect(opponentData.length).toBe(selfData.length);
+    expect(opponentChunkLen).toBe(selfChunkLen);
   });
 
   it('should hide facedown extra cards from teammate', () => {
