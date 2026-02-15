@@ -220,6 +220,52 @@ describe('MSG_UPDATE_CARD', () => {
     expect(decoded.card.defense).toBe(2500);
   });
 
+  it('should handle LEN_EMPTY query block', () => {
+    const msg = new YGOProMsgUpdateCard();
+    msg.controller = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_MZONE;
+    msg.sequence = 1;
+    msg.card = new CardQuery();
+    msg.card.flags = 0;
+    msg.card.empty = true;
+
+    const data = msg.toPayload();
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    expect(view.getInt32(4, true)).toBe(4);
+    expect(data.length).toBe(8); // 4 bytes header + LEN_EMPTY
+
+    const decoded = new YGOProMsgUpdateCard();
+    decoded.fromPayload(data);
+    expect(decoded.card.flags).toBe(0);
+    expect(decoded.card.empty).toBe(true);
+    expect(decoded.card.queryLength).toBe(4);
+  });
+
+  it('should preserve masked query length when re-encoding', () => {
+    const data = new Uint8Array(16);
+    const view = new DataView(data.buffer);
+    data[0] = OcgcoreCommonConstants.MSG_UPDATE_CARD;
+    data[1] = 0;
+    data[2] = OcgcoreScriptConstants.LOCATION_MZONE;
+    data[3] = 0;
+    view.setInt32(4, 12, true); // 保留原始 query 长度
+    // 其余 8 字节保持 0，表示被屏蔽后的数据
+
+    const decoded = new YGOProMsgUpdateCard();
+    decoded.fromPayload(data);
+    expect(decoded.card.flags).toBe(0);
+    expect(decoded.card.queryLength).toBe(12);
+
+    const encoded = decoded.toPayload();
+    const encodedView = new DataView(
+      encoded.buffer,
+      encoded.byteOffset,
+      encoded.byteLength,
+    );
+    expect(encoded.length).toBe(16);
+    expect(encodedView.getInt32(4, true)).toBe(12);
+  });
+
   it('should hide facedown card info in opponent view', () => {
     const msg = new YGOProMsgUpdateCard();
     msg.controller = 0;
@@ -560,5 +606,94 @@ describe('MSG_UPDATE_DATA', () => {
     const opponentView = msg.playerView(1);
     expect(opponentView.cards[0].empty).toBe(true);
     expect(opponentView.cards[0].flags).toBe(0);
+  });
+
+  it('should hide non-faceup hand cards in opponent view', () => {
+    const msg = new YGOProMsgUpdateData();
+    msg.player = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_HAND;
+    msg.cards = [];
+
+    const hiddenCard = new CardQuery();
+    hiddenCard.flags =
+      OcgcoreCommonConstants.QUERY_CODE |
+      OcgcoreCommonConstants.QUERY_POSITION;
+    hiddenCard.code = 12345;
+    hiddenCard.position = 0; // 非公开手牌
+    msg.cards.push(hiddenCard);
+
+    const publicCard = new CardQuery();
+    publicCard.flags =
+      OcgcoreCommonConstants.QUERY_CODE |
+      OcgcoreCommonConstants.QUERY_POSITION;
+    publicCard.code = 67890;
+    publicCard.position = OcgcoreCommonConstants.POS_FACEUP;
+    msg.cards.push(publicCard);
+
+    const opponentView = msg.opponentView();
+    expect(opponentView.cards[0].empty).toBe(true);
+    expect(opponentView.cards[0].flags).toBe(0);
+    expect(opponentView.cards[1].code).toBe(67890);
+  });
+
+  it('should hide facedown extra cards from teammate', () => {
+    const msg = new YGOProMsgUpdateData();
+    msg.player = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_EXTRA;
+    msg.cards = [];
+
+    const card = new CardQuery();
+    card.flags =
+      OcgcoreCommonConstants.QUERY_CODE |
+      OcgcoreCommonConstants.QUERY_POSITION;
+    card.code = 12345;
+    card.position = OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE;
+    msg.cards.push(card);
+
+    const teammateView = msg.teammateView();
+    expect(teammateView.cards[0].empty).toBe(true);
+    expect(teammateView.cards[0].flags).toBe(0);
+  });
+
+  it('should encode empty slot as LEN_EMPTY (4 bytes)', () => {
+    const msg = new YGOProMsgUpdateData();
+    msg.player = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_MZONE;
+    msg.cards = [];
+
+    const emptySlot = new CardQuery();
+    emptySlot.flags = 0;
+    emptySlot.empty = true;
+    msg.cards.push(emptySlot);
+
+    const data = msg.toPayload();
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    expect(view.getInt32(3, true)).toBe(4);
+    expect(data.length).toBe(7); // identifier + player + location + LEN_EMPTY
+  });
+
+  it('should preserve masked chunk length when re-encoding', () => {
+    const data = new Uint8Array(15);
+    const view = new DataView(data.buffer);
+    data[0] = 6; // MSG_UPDATE_DATA
+    data[1] = 0;
+    data[2] = OcgcoreScriptConstants.LOCATION_HAND;
+    view.setInt32(3, 12, true); // 原始 chunk 长度（含长度字段）
+    // 其余 8 字节保持为 0，表示被屏蔽后的查询数据
+
+    const decoded = new YGOProMsgUpdateData();
+    decoded.fromPayload(data);
+    expect(decoded.cards[0].flags).toBe(0);
+    expect(decoded.cards[0].empty).toBe(true);
+    expect(decoded.cards[0].queryLength).toBe(12);
+
+    const encoded = decoded.toPayload();
+    const encodedView = new DataView(
+      encoded.buffer,
+      encoded.byteOffset,
+      encoded.byteLength,
+    );
+    expect(encoded.length).toBe(15);
+    expect(encodedView.getInt32(3, true)).toBe(12);
   });
 });

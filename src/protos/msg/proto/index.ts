@@ -78,6 +78,7 @@ export * from './swap-grave-deck';
 export * from './tag-swap';
 export * from './toss-coin';
 export * from './toss-dice';
+export * from './unequip';
 export * from './update-card';
 export * from './update-data';
 export * from './waiting';

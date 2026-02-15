@@ -14,6 +14,8 @@ export class CardQuery_Counter {
 export class CardQuery {
   flags: number = 0;
   empty?: boolean;
+  // MSG_UPDATE_DATA 每个卡片块的原始总长度（包含 4 字节长度字段）
+  queryLength?: number;
 
   // QUERY_CODE (1)
   code?: number;
@@ -448,4 +450,80 @@ export function serializeCardQuery(card?: Partial<CardQuery>): Uint8Array {
   }
 
   return new Uint8Array(view.buffer, view.byteOffset, offset);
+}
+
+export interface CardQueryChunk {
+  length: number;
+  payload: Uint8Array;
+}
+
+export function parseCardQueryChunk(
+  data: Uint8Array,
+  offset = 0,
+  context = 'CardQuery',
+): { card: CardQuery; length: number } {
+  if (offset + 4 > data.length) {
+    throw new Error(`${context} chunk header truncated`);
+  }
+
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const length = view.getInt32(offset, true);
+  if (length < 4) {
+    throw new Error(`${context} invalid chunk length: ${length}`);
+  }
+  if (offset + length > data.length) {
+    throw new Error(`${context} chunk payload truncated`);
+  }
+
+  const card = new CardQuery();
+  card.queryLength = length;
+
+  if (length === 4) {
+    card.flags = 0;
+    card.empty = true;
+    return { card, length };
+  }
+
+  const payload = data.slice(offset + 4, offset + length);
+  card.fromPayload(payload);
+  return { card, length };
+}
+
+export function serializeCardQueryChunk(card?: Partial<CardQuery>): CardQueryChunk {
+  const flags = card?.flags ?? 0;
+  const queryLength = card?.queryLength;
+
+  // 空槽位（LEN_EMPTY）
+  if (flags === 0 && card?.empty && (!queryLength || queryLength <= 4)) {
+    return { length: 4, payload: new Uint8Array(0) };
+  }
+
+  // 被屏蔽的卡片数据通常全 0，保留原始 chunk 长度用于转发
+  if (flags === 0 && queryLength && queryLength > 4) {
+    return { length: queryLength, payload: new Uint8Array(queryLength - 4) };
+  }
+
+  const payload = serializeCardQuery(card);
+  return { length: 4 + payload.length, payload };
+}
+
+export function createClearedCardQuery(
+  source?: Partial<CardQuery>,
+): CardQuery {
+  const card = new CardQuery();
+  card.flags = 0;
+  card.empty = true;
+  card.queryLength = source?.queryLength;
+  return card;
+}
+
+export function createCodeHiddenCardQuery(
+  source?: Partial<CardQuery>,
+): CardQuery {
+  const card = new CardQuery();
+  card.flags = OcgcoreCommonConstants.QUERY_CODE;
+  card.code = 0;
+  card.empty = false;
+  card.queryLength = source?.queryLength;
+  return card;
 }

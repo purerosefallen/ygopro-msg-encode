@@ -11,6 +11,10 @@ export class YGOProMsgCardTarget_CardLocation {
 
   @BinaryField('u8', 2)
   sequence: number;
+
+  // get_info_location() 的第 4 字节（gframe 侧会读取后丢弃）
+  @BinaryField('u8', 3)
+  position: number;
 }
 
 export class YGOProMsgCardTarget extends YGOProMsgBase {
@@ -19,6 +23,6 @@ export class YGOProMsgCardTarget extends YGOProMsgBase {
   @BinaryField(() => YGOProMsgCardTarget_CardLocation, 0)
   card1: YGOProMsgCardTarget_CardLocation;
 
-  @BinaryField(() => YGOProMsgCardTarget_CardLocation, 3)
+  @BinaryField(() => YGOProMsgCardTarget_CardLocation, 4)
   card2: YGOProMsgCardTarget_CardLocation;
 }

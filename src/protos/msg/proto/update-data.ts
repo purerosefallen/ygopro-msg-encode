@@ -2,7 +2,12 @@ import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
 import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
 import { NetPlayerType } from '../../network-enums';
 import { YGOProMsgBase } from '../base';
-import { CardQuery, serializeCardQuery } from '../../common/card-query';
+import {
+  CardQuery,
+  createClearedCardQuery,
+  parseCardQueryChunk,
+  serializeCardQueryChunk,
+} from '../../common/card-query';
 
 // MSG_UPDATE_DATA 的结构：更新某个位置所有卡片的信息
 export class YGOProMsgUpdateData extends YGOProMsgBase {
@@ -12,20 +17,48 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
   location: number;
   cards: CardQuery[];
 
+  private shouldHideForOpponent(card: CardQuery): boolean {
+    if (this.location === OcgcoreScriptConstants.LOCATION_GRAVE) {
+      return false;
+    }
+    if (this.location === OcgcoreScriptConstants.LOCATION_HAND) {
+      return (
+        !card.position || !(card.position & OcgcoreCommonConstants.POS_FACEUP)
+      );
+    }
+    return !!(
+      card.position && card.position & OcgcoreCommonConstants.POS_FACEDOWN
+    );
+  }
+
+  private shouldHideForTeammate(card: CardQuery): boolean {
+    if (
+      this.location === OcgcoreScriptConstants.LOCATION_MZONE ||
+      this.location === OcgcoreScriptConstants.LOCATION_SZONE ||
+      this.location === OcgcoreScriptConstants.LOCATION_REMOVED ||
+      this.location === OcgcoreScriptConstants.LOCATION_GRAVE
+    ) {
+      return false;
+    }
+    if (this.location === OcgcoreScriptConstants.LOCATION_HAND) {
+      return (
+        !card.position || !(card.position & OcgcoreCommonConstants.POS_FACEUP)
+      );
+    }
+    if (this.location === OcgcoreScriptConstants.LOCATION_EXTRA) {
+      return !!(
+        card.position && card.position & OcgcoreCommonConstants.POS_FACEDOWN
+      );
+    }
+    return false;
+  }
+
   opponentView(): this {
     const copy = this.copy();
-    // 对于每张盖放的卡片，清除查询数据（只保留长度字段，所有数据清零）
     if (copy.cards) {
       copy.cards = copy.cards.map((card) => {
-        if (
-          card.position &&
-          card.position & OcgcoreCommonConstants.POS_FACEDOWN
-        ) {
-          // 盖放的卡片，清除所有查询数据
-          const clearedCard = new CardQuery();
-          clearedCard.flags = 0;
-          clearedCard.empty = true;
-          return clearedCard;
+        if (this.shouldHideForOpponent(card)) {
+          return createClearedCardQuery(card);
         }
         return card;
       });
@@ -34,40 +67,16 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
   }
 
   teammateView(): this {
-    // TAG 决斗中，队友的视角规则（参考 tag_duel.cpp）：
-    // - MZONE/SZONE：队友可以看到己方盖放的卡片（RefreshMzone/RefreshSzone 发给同队两个玩家）
-    // - HAND：队友也看不到非公开的手牌（RefreshHand 只发给当前操作玩家完整数据）
-    // - 其他公开区域（GRAVE 等）：所有人都能看到
-
-    if (
-      this.location === OcgcoreScriptConstants.LOCATION_MZONE ||
-      this.location === OcgcoreScriptConstants.LOCATION_SZONE
-    ) {
-      // 场上区域，队友可以看到完整数据（包括盖放）
-      return this.copy();
-    } else if (this.location === OcgcoreScriptConstants.LOCATION_HAND) {
-      // 手牌区域，队友也看不到非公开的卡片
-      const copy = this.copy();
-      if (copy.cards) {
-        copy.cards = copy.cards.map((card) => {
-          // 只有表侧（公开）的手牌才能被看到
-          if (
-            !card.position ||
-            !(card.position & OcgcoreCommonConstants.POS_FACEUP)
-          ) {
-            const clearedCard = new CardQuery();
-            clearedCard.flags = 0;
-            clearedCard.empty = true;
-            return clearedCard;
-          }
-          return card;
-        });
-      }
-      return copy;
-    } else {
-      // 其他区域（墓地、除外等），通常是公开的
-      return this.copy();
+    const copy = this.copy();
+    if (copy.cards) {
+      copy.cards = copy.cards.map((card) => {
+        if (this.shouldHideForTeammate(card)) {
+          return createClearedCardQuery(card);
+        }
+        return card;
+      });
     }
+    return copy;
   }
 
   fromPayload(data: Uint8Array): this {
@@ -87,48 +96,30 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
     this.player = data[1];
     this.location = data[2];
 
-    // 解析多个卡片的查询数据
     this.cards = [];
     let offset = 3;
-    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
 
-    while (offset + 4 <= data.length) {
-      const chunkLen = view.getInt32(offset, true);
-      if (chunkLen <= 0) {
-        break;
-      }
-
-      const end = Math.min(data.length, offset + chunkLen);
-
-      if (chunkLen <= 4) {
-        // 空卡片
-        const card = new CardQuery();
-        card.flags = 0;
-        card.empty = true;
-        this.cards.push(card);
-      } else {
-        // 跳过长度字段，从 flags 开始解析
-        const cardQueryData = data.slice(offset + 4, end);
-        const card = new CardQuery();
-        card.fromPayload(cardQueryData);
-        this.cards.push(card);
-      }
-
-      offset += chunkLen;
+    while (offset < data.length) {
+      const { card, length } = parseCardQueryChunk(
+        data,
+        offset,
+        'MSG_UPDATE_DATA',
+      );
+      this.cards.push(card);
+      offset += length;
     }
 
     return this;
   }
 
   toPayload(): Uint8Array {
-    // 计算总大小
     let totalSize = 3; // identifier + player + location
 
-    const cardPayloads: Uint8Array[] = [];
+    const chunks: ReturnType<typeof serializeCardQueryChunk>[] = [];
     for (const card of this.cards || []) {
-      const payload = serializeCardQuery(card);
-      cardPayloads.push(payload);
-      totalSize += 4 + payload.length; // 长度字段 + 数据
+      const chunk = serializeCardQueryChunk(card);
+      chunks.push(chunk);
+      totalSize += chunk.length;
     }
 
     const result = new Uint8Array(totalSize);
@@ -139,13 +130,13 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
     result[offset++] = this.player;
     result[offset++] = this.location;
 
-    // 写入每个卡片的数据
-    for (const payload of cardPayloads) {
-      const length = 4 + payload.length;
-      view.setInt32(offset, length, true);
+    for (const chunk of chunks) {
+      view.setInt32(offset, chunk.length, true);
       offset += 4;
-      result.set(payload, offset);
-      offset += payload.length;
+      if (chunk.payload.length > 0) {
+        result.set(chunk.payload, offset);
+        offset += chunk.payload.length;
+      }
     }
 
     return result;

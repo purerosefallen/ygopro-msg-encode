@@ -81,6 +81,7 @@ import {
   YGOProMsgTagSwap,
   YGOProMsgTossCoin,
   YGOProMsgTossDice,
+  YGOProMsgUnequip,
   YGOProMsgUpdateCard,
   YGOProMsgUpdateData,
   YGOProMsgWaiting,
@@ -143,6 +144,7 @@ YGOProMessages.register(YGOProMsgDraw);
 YGOProMessages.register(YGOProMsgDamage);
 YGOProMessages.register(YGOProMsgRecover);
 YGOProMessages.register(YGOProMsgEquip);
+YGOProMessages.register(YGOProMsgUnequip);
 YGOProMessages.register(YGOProMsgLpUpdate);
 YGOProMessages.register(YGOProMsgCardTarget);
 YGOProMessages.register(YGOProMsgCancelTarget);

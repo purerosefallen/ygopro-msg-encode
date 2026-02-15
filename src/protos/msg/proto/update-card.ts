@@ -1,7 +1,12 @@
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
 import { NetPlayerType } from '../../network-enums';
 import { YGOProMsgBase } from '../base';
-import { CardQuery, serializeCardQuery } from '../../common/card-query';
+import {
+  CardQuery,
+  createCodeHiddenCardQuery,
+  parseCardQueryChunk,
+  serializeCardQueryChunk,
+} from '../../common/card-query';
 import { RequireQueryCardLocation } from '../query-location';
 
 // MSG_UPDATE_CARD 的结构：更新单张卡片的信息
@@ -20,11 +25,7 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
       copy.card?.position &&
       copy.card.position & OcgcoreCommonConstants.POS_FACEDOWN
     ) {
-      const clearedCard = new CardQuery();
-      clearedCard.flags = OcgcoreCommonConstants.QUERY_CODE;
-      clearedCard.code = 0;
-      clearedCard.empty = false;
-      copy.card = clearedCard;
+      copy.card = createCodeHiddenCardQuery(copy.card);
     }
     return copy;
   }
@@ -65,32 +66,20 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
     this.location = data[2];
     this.sequence = data[3];
 
-    // 解析查询数据，前 4 字节是长度
     const queryDataWithLength = data.slice(4);
-    if (queryDataWithLength.length < 8) {
-      throw new Error('Query data too short');
-    }
-
-    const view = new DataView(
-      queryDataWithLength.buffer,
-      queryDataWithLength.byteOffset,
-      queryDataWithLength.byteLength,
+    const { card } = parseCardQueryChunk(
+      queryDataWithLength,
+      0,
+      'MSG_UPDATE_CARD',
     );
-    const length = view.getInt32(0, true);
-
-    // 跳过长度字段，从 flags 开始解析
-    const cardQueryData = queryDataWithLength.slice(4, length);
-    this.card = new CardQuery();
-    this.card.fromPayload(cardQueryData);
+    this.card = card;
 
     return this;
   }
 
   toPayload(): Uint8Array {
-    const cardPayload = serializeCardQuery(this.card); // 至少包含 flags
-    const length = 4 + cardPayload.length; // 长度字段本身 + 查询数据
-
-    const result = new Uint8Array(4 + length);
+    const chunk = serializeCardQueryChunk(this.card);
+    const result = new Uint8Array(4 + chunk.length);
     const view = new DataView(result.buffer);
 
     result[0] = this.identifier;
@@ -99,10 +88,11 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
     result[3] = this.sequence;
 
     // 写入长度
-    view.setInt32(4, length, true);
+    view.setInt32(4, chunk.length, true);
 
-    // 写入查询数据
-    result.set(cardPayload, 8);
+    if (chunk.payload.length > 0) {
+      result.set(chunk.payload, 8);
+    }
 
     return result;
   }

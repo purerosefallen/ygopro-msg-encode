@@ -20,10 +20,16 @@ export class YGOProMsgSwap_CardLocation {
 export class YGOProMsgSwap extends YGOProMsgBase {
   static identifier = OcgcoreCommonConstants.MSG_SWAP;
 
-  @BinaryField(() => YGOProMsgSwap_CardLocation, 0)
-  card1: YGOProMsgSwap_CardLocation;
+  @BinaryField('i32', 0)
+  code1: number;
 
   @BinaryField(() => YGOProMsgSwap_CardLocation, 4)
+  card1: YGOProMsgSwap_CardLocation;
+
+  @BinaryField('i32', 8)
+  code2: number;
+
+  @BinaryField(() => YGOProMsgSwap_CardLocation, 12)
   card2: YGOProMsgSwap_CardLocation;
 
   getRequireRefreshCards(): RequireQueryCardLocation[] {

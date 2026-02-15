@@ -4,18 +4,23 @@ import {
   YGOProMsgHint,
   YGOProMsgWin,
   YGOProMsgBattle,
+  YGOProMsgCancelTarget,
+  YGOProMsgCardTarget,
   YGOProMsgNewTurn,
   YGOProMsgDamage,
   YGOProMsgChaining,
+  YGOProMsgEquip,
   YGOProMsgPosChange,
   YGOProMsgSet,
   YGOProMsgShuffleExtra,
   YGOProMsgShuffleHand,
   YGOProMsgTagSwap,
+  YGOProMsgUnequip,
   YGOProMsgSelectCard,
   YGOProMsgSelectTribute,
   YGOProMsgSelectUnselectCard,
   YGOProMsgConfirmDeckTop,
+  YGOProMsgSwap,
 } from '../src/protos/msg/proto';
 import { YGOProMessages } from '../src/protos/msg/registry';
 
@@ -206,6 +211,134 @@ describe('YGOPro MSG Serialization', () => {
       expect(decoded.card.sequence).toBe(3);
       expect(decoded.previousPosition).toBe(1);
       expect(decoded.currentPosition).toBe(8);
+    });
+
+    it('should serialize and deserialize MSG_EQUIP', () => {
+      const msg = new YGOProMsgEquip();
+      msg.equip = {
+        controller: 0,
+        location: 5,
+        sequence: 2,
+        position: 4,
+      };
+      msg.target = {
+        controller: 1,
+        location: 4,
+        sequence: 6,
+        position: 1,
+      };
+
+      const data = msg.toPayload();
+      expect(data.length).toBe(9); // identifier + 8 bytes (2 * get_info_location)
+      expect(data[0]).toBe(OcgcoreCommonConstants.MSG_EQUIP);
+      expect(Array.from(data.slice(1))).toEqual([0, 5, 2, 4, 1, 4, 6, 1]);
+
+      const decoded = new YGOProMsgEquip();
+      decoded.fromPayload(data);
+
+      expect(decoded.equip.controller).toBe(0);
+      expect(decoded.equip.location).toBe(5);
+      expect(decoded.equip.sequence).toBe(2);
+      expect(decoded.equip.position).toBe(4);
+      expect(decoded.target.controller).toBe(1);
+      expect(decoded.target.location).toBe(4);
+      expect(decoded.target.sequence).toBe(6);
+      expect(decoded.target.position).toBe(1);
+    });
+
+    it('should serialize and deserialize MSG_UNEQUIP', () => {
+      const msg = new YGOProMsgUnequip();
+      msg.card = {
+        controller: 1,
+        location: 5,
+        sequence: 4,
+        position: 2,
+      };
+
+      const data = msg.toPayload();
+      expect(data.length).toBe(5); // identifier + 4 bytes
+      expect(data[0]).toBe(95); // MSG_UNEQUIP
+      expect(Array.from(data.slice(1))).toEqual([1, 5, 4, 2]);
+
+      const decoded = new YGOProMsgUnequip();
+      decoded.fromPayload(data);
+
+      expect(decoded.card.controller).toBe(1);
+      expect(decoded.card.location).toBe(5);
+      expect(decoded.card.sequence).toBe(4);
+      expect(decoded.card.position).toBe(2);
+    });
+
+    it('should serialize and deserialize MSG_CARD_TARGET', () => {
+      const msg = new YGOProMsgCardTarget();
+      msg.card1 = { controller: 0, location: 4, sequence: 1, position: 2 };
+      msg.card2 = { controller: 1, location: 5, sequence: 3, position: 1 };
+
+      const data = msg.toPayload();
+      expect(data.length).toBe(9); // identifier + 8 bytes
+      expect(data[0]).toBe(OcgcoreCommonConstants.MSG_CARD_TARGET);
+      expect(Array.from(data.slice(1))).toEqual([0, 4, 1, 2, 1, 5, 3, 1]);
+
+      const decoded = new YGOProMsgCardTarget();
+      decoded.fromPayload(data);
+
+      expect(decoded.card1.controller).toBe(0);
+      expect(decoded.card1.location).toBe(4);
+      expect(decoded.card1.sequence).toBe(1);
+      expect(decoded.card1.position).toBe(2);
+      expect(decoded.card2.controller).toBe(1);
+      expect(decoded.card2.location).toBe(5);
+      expect(decoded.card2.sequence).toBe(3);
+      expect(decoded.card2.position).toBe(1);
+    });
+
+    it('should serialize and deserialize MSG_CANCEL_TARGET', () => {
+      const msg = new YGOProMsgCancelTarget();
+      msg.card1 = { controller: 1, location: 4, sequence: 2, position: 8 };
+      msg.card2 = { controller: 0, location: 8, sequence: 0, position: 4 };
+
+      const data = msg.toPayload();
+      expect(data.length).toBe(9); // identifier + 8 bytes
+      expect(data[0]).toBe(OcgcoreCommonConstants.MSG_CANCEL_TARGET);
+      expect(Array.from(data.slice(1))).toEqual([1, 4, 2, 8, 0, 8, 0, 4]);
+
+      const decoded = new YGOProMsgCancelTarget();
+      decoded.fromPayload(data);
+
+      expect(decoded.card1.controller).toBe(1);
+      expect(decoded.card1.location).toBe(4);
+      expect(decoded.card1.sequence).toBe(2);
+      expect(decoded.card1.position).toBe(8);
+      expect(decoded.card2.controller).toBe(0);
+      expect(decoded.card2.location).toBe(8);
+      expect(decoded.card2.sequence).toBe(0);
+      expect(decoded.card2.position).toBe(4);
+    });
+
+    it('should serialize and deserialize MSG_SWAP', () => {
+      const msg = new YGOProMsgSwap();
+      msg.code1 = 111111;
+      msg.card1 = { controller: 0, location: 4, sequence: 1, position: 1 };
+      msg.code2 = 222222;
+      msg.card2 = { controller: 1, location: 4, sequence: 3, position: 2 };
+
+      const data = msg.toPayload();
+      expect(data.length).toBe(17); // identifier + 16 bytes
+      expect(data[0]).toBe(OcgcoreCommonConstants.MSG_SWAP);
+
+      const decoded = new YGOProMsgSwap();
+      decoded.fromPayload(data);
+
+      expect(decoded.code1).toBe(111111);
+      expect(decoded.card1.controller).toBe(0);
+      expect(decoded.card1.location).toBe(4);
+      expect(decoded.card1.sequence).toBe(1);
+      expect(decoded.card1.position).toBe(1);
+      expect(decoded.code2).toBe(222222);
+      expect(decoded.card2.controller).toBe(1);
+      expect(decoded.card2.location).toBe(4);
+      expect(decoded.card2.sequence).toBe(3);
+      expect(decoded.card2.position).toBe(2);
     });
 
     it('should validate MSG identifier', () => {
