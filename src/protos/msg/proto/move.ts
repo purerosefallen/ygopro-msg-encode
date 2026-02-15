@@ -62,31 +62,9 @@ export class YGOProMsgMove extends YGOProMsgBase {
   }
 
   teammateView(): this {
-    // TAG 决斗中，队友能看到场上的背面卡，但看不到手牌和卡组
-    const view = this.copy();
-    const cl = view.current.location;
-    const cp = view.current.position;
-
-    // 移动到墓地或叠放不隐藏
-    if (
-      cl &
-      (OcgcoreScriptConstants.LOCATION_GRAVE |
-        OcgcoreScriptConstants.LOCATION_OVERLAY)
-    ) {
-      return view;
-    }
-
-    // 移动到卡组、手牌时隐藏 code
-    if (
-      cl &
-      (OcgcoreScriptConstants.LOCATION_DECK |
-        OcgcoreScriptConstants.LOCATION_HAND)
-    ) {
-      view.code = 0;
-    }
-
-    // 场上的背面卡队友可以看到
-    return view;
+    // gframe/tag_duel 对 MSG_MOVE 的遮蔽规则是：
+    // 除当前控制方外，其他所有人（包含队友）都使用同一规则遮蔽 code。
+    return this.opponentView();
   }
 
   playerView(playerId: number): this {

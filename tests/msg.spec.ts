@@ -1,4 +1,5 @@
 import { OcgcoreCommonConstants } from '../src/vendor/ocgcore-constants';
+import { OcgcoreScriptConstants } from '../src/vendor/script-constants';
 import {
   YGOProMsgDraw,
   YGOProMsgHint,
@@ -20,6 +21,7 @@ import {
   YGOProMsgSelectTribute,
   YGOProMsgSelectUnselectCard,
   YGOProMsgConfirmDeckTop,
+  YGOProMsgMove,
   YGOProMsgSwap,
 } from '../src/protos/msg/proto';
 import { YGOProMessages } from '../src/protos/msg/registry';
@@ -211,6 +213,56 @@ describe('YGOPro MSG Serialization', () => {
       expect(decoded.card.sequence).toBe(3);
       expect(decoded.previousPosition).toBe(1);
       expect(decoded.currentPosition).toBe(8);
+    });
+
+    it('should serialize and deserialize MSG_MOVE', () => {
+      const msg = new YGOProMsgMove();
+      msg.code = 445566;
+      msg.previous = { controller: 0, location: 2, sequence: 1, position: 0 };
+      msg.current = {
+        controller: 0,
+        location: 4,
+        sequence: 3,
+        position: OcgcoreCommonConstants.POS_FACEUP_ATTACK,
+      };
+      msg.reason = 0x1234;
+
+      const data = msg.toPayload();
+      expect(data.length).toBe(17); // identifier + 16 bytes
+      expect(data[0]).toBe(OcgcoreCommonConstants.MSG_MOVE);
+
+      const decoded = new YGOProMsgMove();
+      decoded.fromPayload(data);
+      expect(decoded.code).toBe(445566);
+      expect(decoded.previous).toEqual({
+        controller: 0,
+        location: 2,
+        sequence: 1,
+        position: 0,
+      });
+      expect(decoded.current).toEqual({
+        controller: 0,
+        location: 4,
+        sequence: 3,
+        position: OcgcoreCommonConstants.POS_FACEUP_ATTACK,
+      });
+      expect(decoded.reason).toBe(0x1234);
+    });
+
+    it('should hide MOVE code for teammate when moving to facedown field', () => {
+      const msg = new YGOProMsgMove();
+      msg.code = 998877;
+      msg.previous = { controller: 0, location: 2, sequence: 0, position: 0 };
+      msg.current = {
+        controller: 0,
+        location: OcgcoreScriptConstants.LOCATION_MZONE,
+        sequence: 0,
+        position: OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+      };
+      msg.reason = 0;
+
+      const teammateView = msg.teammateView();
+      expect(teammateView.code).toBe(0);
     });
 
     it('should serialize and deserialize MSG_EQUIP', () => {
