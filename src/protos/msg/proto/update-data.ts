@@ -17,6 +17,16 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
   location: number;
   cards: CardQuery[];
 
+  private getFixedSlotCount(): number | undefined {
+    if (this.location === OcgcoreScriptConstants.LOCATION_MZONE) {
+      return 7;
+    }
+    if (this.location === OcgcoreScriptConstants.LOCATION_SZONE) {
+      return 8;
+    }
+    return undefined;
+  }
+
   private shouldHideForOpponent(card: CardQuery): boolean {
     if (this.location === OcgcoreScriptConstants.LOCATION_GRAVE) {
       return false;
@@ -113,10 +123,28 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
   }
 
   toPayload(): Uint8Array {
+    const inputCards = this.cards || [];
+    const fixedSlotCount = this.getFixedSlotCount();
+    let cardsToEncode = inputCards;
+
+    if (fixedSlotCount !== undefined) {
+      if (inputCards.length > fixedSlotCount) {
+        throw new Error(
+          `MSG_UPDATE_DATA location ${this.location} expects at most ${fixedSlotCount} chunks, got ${inputCards.length}`,
+        );
+      }
+      if (inputCards.length < fixedSlotCount) {
+        cardsToEncode = inputCards.slice();
+        for (let i = inputCards.length; i < fixedSlotCount; i++) {
+          cardsToEncode.push(createClearedCardQuery());
+        }
+      }
+    }
+
     let totalSize = 3; // identifier + player + location
 
     const chunks: ReturnType<typeof serializeCardQueryChunk>[] = [];
-    for (const card of this.cards || []) {
+    for (const card of cardsToEncode) {
       const chunk = serializeCardQueryChunk(card);
       chunks.push(chunk);
       totalSize += chunk.length;

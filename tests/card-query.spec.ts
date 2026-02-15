@@ -430,7 +430,7 @@ describe('MSG_UPDATE_DATA', () => {
 
     expect(decoded.player).toBe(0);
     expect(decoded.location).toBe(4);
-    expect(decoded.cards.length).toBe(3);
+    expect(decoded.cards.length).toBe(7);
 
     // 验证卡片 1
     expect(decoded.cards[0].code).toBe(89631139);
@@ -443,12 +443,18 @@ describe('MSG_UPDATE_DATA', () => {
     // 验证卡片 3
     expect(decoded.cards[2].code).toBe(55144522);
     expect(decoded.cards[2].defense).toBe(2000);
+
+    // MZONE 固定 7 槽，剩余为空槽
+    for (let i = 3; i < 7; i++) {
+      expect(decoded.cards[i].empty).toBe(true);
+      expect(decoded.cards[i].flags).toBe(0);
+    }
   });
 
   it('should handle empty field', () => {
     const msg = new YGOProMsgUpdateData();
     msg.player = 1;
-    msg.location = 5; // LOCATION_SZONE
+    msg.location = OcgcoreScriptConstants.LOCATION_HAND;
     msg.cards = [];
 
     const data = msg.toPayload();
@@ -456,7 +462,7 @@ describe('MSG_UPDATE_DATA', () => {
     decoded.fromPayload(data);
 
     expect(decoded.player).toBe(1);
-    expect(decoded.location).toBe(5);
+    expect(decoded.location).toBe(OcgcoreScriptConstants.LOCATION_HAND);
     expect(decoded.cards.length).toBe(0);
   });
 
@@ -669,7 +675,7 @@ describe('MSG_UPDATE_DATA', () => {
     const data = msg.toPayload();
     const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
     expect(view.getInt32(3, true)).toBe(4);
-    expect(data.length).toBe(7); // identifier + player + location + LEN_EMPTY
+    expect(data.length).toBe(31); // identifier + player + location + 7*LEN_EMPTY
   });
 
   it('should preserve masked chunk length when re-encoding', () => {
@@ -695,5 +701,50 @@ describe('MSG_UPDATE_DATA', () => {
     );
     expect(encoded.length).toBe(15);
     expect(encodedView.getInt32(3, true)).toBe(12);
+  });
+
+  it('should pad MZONE to 7 LEN_EMPTY chunks', () => {
+    const msg = new YGOProMsgUpdateData();
+    msg.player = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_MZONE;
+    msg.cards = [];
+
+    const data = msg.toPayload();
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    expect(data.length).toBe(3 + 7 * 4);
+    for (let i = 0; i < 7; i++) {
+      expect(view.getInt32(3 + i * 4, true)).toBe(4);
+    }
+  });
+
+  it('should pad SZONE to 8 LEN_EMPTY chunks', () => {
+    const msg = new YGOProMsgUpdateData();
+    msg.player = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_SZONE;
+    msg.cards = [];
+
+    const data = msg.toPayload();
+    const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    expect(data.length).toBe(3 + 8 * 4);
+    for (let i = 0; i < 8; i++) {
+      expect(view.getInt32(3 + i * 4, true)).toBe(4);
+    }
+  });
+
+  it('should reject too many chunks for fixed-size zones', () => {
+    const msg = new YGOProMsgUpdateData();
+    msg.player = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_MZONE;
+    msg.cards = [];
+    for (let i = 0; i < 8; i++) {
+      const empty = new CardQuery();
+      empty.flags = 0;
+      empty.empty = true;
+      msg.cards.push(empty);
+    }
+
+    expect(() => msg.toPayload()).toThrow(
+      'expects at most 7 chunks, got 8',
+    );
   });
 });
