@@ -4,6 +4,7 @@ import { YGOProMsgBase } from '../base';
 import {
   CardQuery,
   createCodeHiddenCardQuery,
+  getCardQueryPosition,
   parseCardQueryChunk,
   serializeCardQueryChunk,
 } from '../../common/card-query';
@@ -20,11 +21,9 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
 
   opponentView(): this {
     const copy = this.copy();
+    const position = getCardQueryPosition(copy.card);
     // 如果卡片是盖放的，清除查询数据（只保留 flags = QUERY_CODE，code = 0）
-    if (
-      copy.card?.position &&
-      copy.card.position & OcgcoreCommonConstants.POS_FACEDOWN
-    ) {
+    if (position && position & OcgcoreCommonConstants.POS_FACEDOWN) {
       copy.card = createCodeHiddenCardQuery(copy.card);
     }
     return copy;

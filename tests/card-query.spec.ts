@@ -30,6 +30,31 @@ describe('CardQuery', () => {
       expect(decoded.defense).toBe(2500);
     });
 
+    it('should serialize and deserialize full QUERY_POSITION info_location fields', () => {
+      const card = new CardQuery();
+      card.flags = OcgcoreCommonConstants.QUERY_POSITION;
+      card.controller = 1;
+      card.location = OcgcoreScriptConstants.LOCATION_MZONE;
+      card.sequence = 5;
+      card.position = OcgcoreCommonConstants.POS_FACEUP_ATTACK;
+
+      const data = card.toPayload();
+      const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+      expect(view.getUint32(4, true)).toBe(
+        1 |
+          (OcgcoreScriptConstants.LOCATION_MZONE << 8) |
+          (5 << 16) |
+          (OcgcoreCommonConstants.POS_FACEUP_ATTACK << 24),
+      );
+
+      const decoded = new CardQuery();
+      decoded.fromPayload(data);
+      expect(decoded.controller).toBe(1);
+      expect(decoded.location).toBe(OcgcoreScriptConstants.LOCATION_MZONE);
+      expect(decoded.sequence).toBe(5);
+      expect(decoded.position).toBe(OcgcoreCommonConstants.POS_FACEUP_ATTACK);
+    });
+
     it('should handle empty card', () => {
       const card = new CardQuery();
       card.flags = 0;
@@ -116,8 +141,18 @@ describe('CardQuery', () => {
       const card = new CardQuery();
       card.flags = OcgcoreCommonConstants.QUERY_TARGET_CARD;
       card.targetCards = [
-        { controller: 0, location: 4, sequence: 0 },
-        { controller: 1, location: 4, sequence: 1 },
+        {
+          controller: 0,
+          location: 4,
+          sequence: 0,
+          position: OcgcoreCommonConstants.POS_FACEUP_ATTACK,
+        },
+        {
+          controller: 1,
+          location: 4,
+          sequence: 1,
+          position: OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+        },
       ];
 
       const data = card.toPayload();
@@ -129,11 +164,13 @@ describe('CardQuery', () => {
         controller: 0,
         location: 4,
         sequence: 0,
+        position: OcgcoreCommonConstants.POS_FACEUP_ATTACK,
       });
       expect(decoded.targetCards?.[1]).toEqual({
         controller: 1,
         location: 4,
         sequence: 1,
+        position: OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
       });
     });
 
@@ -157,7 +194,12 @@ describe('CardQuery', () => {
     it('should serialize and deserialize equip card', () => {
       const card = new CardQuery();
       card.flags = OcgcoreCommonConstants.QUERY_EQUIP_CARD;
-      card.equipCard = { controller: 0, location: 4, sequence: 2 };
+      card.equipCard = {
+        controller: 0,
+        location: 4,
+        sequence: 2,
+        position: OcgcoreCommonConstants.POS_FACEUP_DEFENSE,
+      };
 
       const data = card.toPayload();
       const decoded = new CardQuery();
@@ -167,6 +209,29 @@ describe('CardQuery', () => {
         controller: 0,
         location: 4,
         sequence: 2,
+        position: OcgcoreCommonConstants.POS_FACEUP_DEFENSE,
+      });
+    });
+
+    it('should serialize and deserialize reason card location', () => {
+      const card = new CardQuery();
+      card.flags = OcgcoreCommonConstants.QUERY_REASON_CARD;
+      card.reasonCard = {
+        controller: 1,
+        location: 16,
+        sequence: 3,
+        position: OcgcoreCommonConstants.POS_FACEUP_ATTACK,
+      };
+
+      const data = card.toPayload();
+      const decoded = new CardQuery();
+      decoded.fromPayload(data);
+
+      expect(decoded.reasonCard).toEqual({
+        controller: 1,
+        location: 16,
+        sequence: 3,
+        position: OcgcoreCommonConstants.POS_FACEUP_ATTACK,
       });
     });
   });
@@ -291,6 +356,29 @@ describe('MSG_UPDATE_CARD', () => {
     expect(opponentView.card.attack).toBeUndefined();
     expect(opponentView.card.defense).toBeUndefined();
     expect(opponentView.card.position).toBeUndefined();
+  });
+
+  it('should hide facedown card info in opponent view with full position fields', () => {
+    const msg = new YGOProMsgUpdateCard();
+    msg.controller = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_MZONE;
+    msg.sequence = 0;
+
+    msg.card = new CardQuery();
+    msg.card.flags =
+      OcgcoreCommonConstants.QUERY_CODE |
+      OcgcoreCommonConstants.QUERY_POSITION |
+      OcgcoreCommonConstants.QUERY_ATTACK;
+    msg.card.code = 89631139;
+    msg.card.attack = 3000;
+    msg.card.controller = 0;
+    msg.card.location = OcgcoreScriptConstants.LOCATION_MZONE;
+    msg.card.sequence = 0;
+    msg.card.position = OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE;
+
+    const opponentView = msg.opponentView();
+    expect(opponentView.card.flags).toBe(OcgcoreCommonConstants.QUERY_CODE);
+    expect(opponentView.card.code).toBe(0);
   });
 
   it('should not hide faceup card info in opponent view', () => {
@@ -671,6 +759,40 @@ describe('MSG_UPDATE_DATA', () => {
       OcgcoreCommonConstants.QUERY_POSITION;
     publicCard.code = 67890;
     publicCard.position = OcgcoreCommonConstants.POS_FACEUP;
+    msg.cards.push(publicCard);
+
+    const opponentView = msg.opponentView();
+    expect(opponentView.cards[0].empty).toBe(true);
+    expect(opponentView.cards[0].flags).toBe(0);
+    expect(opponentView.cards[1].code).toBe(67890);
+  });
+
+  it('should use full position fields for hand visibility in opponent view', () => {
+    const msg = new YGOProMsgUpdateData();
+    msg.player = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_HAND;
+    msg.cards = [];
+
+    const hiddenCard = new CardQuery();
+    hiddenCard.flags =
+      OcgcoreCommonConstants.QUERY_CODE |
+      OcgcoreCommonConstants.QUERY_POSITION;
+    hiddenCard.code = 12345;
+    hiddenCard.controller = 0;
+    hiddenCard.location = OcgcoreScriptConstants.LOCATION_HAND;
+    hiddenCard.sequence = 0;
+    hiddenCard.position = 0;
+    msg.cards.push(hiddenCard);
+
+    const publicCard = new CardQuery();
+    publicCard.flags =
+      OcgcoreCommonConstants.QUERY_CODE |
+      OcgcoreCommonConstants.QUERY_POSITION;
+    publicCard.code = 67890;
+    publicCard.controller = 0;
+    publicCard.location = OcgcoreScriptConstants.LOCATION_HAND;
+    publicCard.sequence = 1;
+    publicCard.position = OcgcoreCommonConstants.POS_FACEUP_ATTACK;
     msg.cards.push(publicCard);
 
     const opponentView = msg.opponentView();

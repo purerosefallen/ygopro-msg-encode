@@ -4,6 +4,7 @@ import { YGOProMsgBase } from '../base';
 import {
   CardQuery,
   createClearedCardQuery,
+  getCardQueryPosition,
   parseCardQueryChunk,
   serializeCardQueryChunk,
 } from '../../common/card-query';
@@ -27,20 +28,18 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
   }
 
   private shouldHideForOpponent(card: CardQuery): boolean {
+    const position = getCardQueryPosition(card);
     if (this.location === OcgcoreScriptConstants.LOCATION_GRAVE) {
       return false;
     }
     if (this.location === OcgcoreScriptConstants.LOCATION_HAND) {
-      return (
-        !card.position || !(card.position & OcgcoreCommonConstants.POS_FACEUP)
-      );
+      return !position || !(position & OcgcoreCommonConstants.POS_FACEUP);
     }
-    return !!(
-      card.position && card.position & OcgcoreCommonConstants.POS_FACEDOWN
-    );
+    return !!(position && position & OcgcoreCommonConstants.POS_FACEDOWN);
   }
 
   private shouldHideForTeammate(card: CardQuery): boolean {
+    const position = getCardQueryPosition(card);
     if (
       this.location === OcgcoreScriptConstants.LOCATION_MZONE ||
       this.location === OcgcoreScriptConstants.LOCATION_SZONE ||
@@ -50,14 +49,10 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
       return false;
     }
     if (this.location === OcgcoreScriptConstants.LOCATION_HAND) {
-      return (
-        !card.position || !(card.position & OcgcoreCommonConstants.POS_FACEUP)
-      );
+      return !position || !(position & OcgcoreCommonConstants.POS_FACEUP);
     }
     if (this.location === OcgcoreScriptConstants.LOCATION_EXTRA) {
-      return !!(
-        card.position && card.position & OcgcoreCommonConstants.POS_FACEDOWN
-      );
+      return !!(position && position & OcgcoreCommonConstants.POS_FACEDOWN);
     }
     return false;
   }

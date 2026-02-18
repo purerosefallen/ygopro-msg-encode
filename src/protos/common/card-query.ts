@@ -4,6 +4,7 @@ export class CardQuery_CardLocation {
   controller: number;
   location: number;
   sequence: number;
+  position: number;
 }
 
 export class CardQuery_Counter {
@@ -16,19 +17,14 @@ export class CardQuery {
   empty?: boolean;
   // MSG_UPDATE_DATA 每个卡片块的原始总长度（包含 4 字节长度字段）
   queryLength?: number;
-  // QUERY_POSITION 的原始 32 位信息（controller/location/sequence/position）
-  positionData?: number;
-  // QUERY_REASON_CARD 的原始 32 位信息（info_location）
-  reasonCardData?: number;
-  // QUERY_EQUIP_CARD 的原始 32 位信息（info_location）
-  equipCardData?: number;
-  // QUERY_TARGET_CARD 各目标的原始 32 位信息（info_location）
-  targetCardData?: number[];
 
   // QUERY_CODE (1)
   code?: number;
 
   // QUERY_POSITION (2)
+  controller?: number;
+  location?: number;
+  sequence?: number;
   position?: number;
 
   // QUERY_ALIAS (4)
@@ -63,6 +59,7 @@ export class CardQuery {
 
   // QUERY_REASON (4096)
   reason?: number;
+  reasonCard?: CardQuery_CardLocation;
 
   // QUERY_EQUIP_CARD (16384)
   equipCard?: CardQuery_CardLocation;
@@ -115,7 +112,9 @@ export class CardQuery {
 
     if (this.flags & OcgcoreCommonConstants.QUERY_POSITION) {
       const pdata = view.getUint32(offset, true);
-      this.positionData = pdata;
+      this.controller = pdata & 0xff;
+      this.location = (pdata >>> 8) & 0xff;
+      this.sequence = (pdata >>> 16) & 0xff;
       this.position = ((pdata >>> 24) & 0xff) >>> 0;
       offset += 4;
     }
@@ -176,17 +175,21 @@ export class CardQuery {
     }
 
     if (this.flags & OcgcoreCommonConstants.QUERY_REASON_CARD) {
-      this.reasonCardData = view.getUint32(offset, true);
+      this.reasonCard = {
+        controller: view.getUint8(offset),
+        location: view.getUint8(offset + 1),
+        sequence: view.getUint8(offset + 2),
+        position: view.getUint8(offset + 3),
+      };
       offset += 4;
     }
 
     if (this.flags & OcgcoreCommonConstants.QUERY_EQUIP_CARD) {
-      const pdata = view.getUint32(offset, true);
-      this.equipCardData = pdata;
       this.equipCard = {
         controller: view.getUint8(offset),
         location: view.getUint8(offset + 1),
         sequence: view.getUint8(offset + 2),
+        position: view.getUint8(offset + 3),
       };
       offset += 4;
     }
@@ -195,13 +198,12 @@ export class CardQuery {
       const count = view.getInt32(offset, true);
       offset += 4;
       this.targetCards = [];
-      this.targetCardData = [];
       for (let i = 0; i < count; i++) {
-        this.targetCardData.push(view.getUint32(offset, true));
         this.targetCards.push({
           controller: view.getUint8(offset),
           location: view.getUint8(offset + 1),
           sequence: view.getUint8(offset + 2),
+          position: view.getUint8(offset + 3),
         });
         offset += 4;
       }
@@ -321,11 +323,12 @@ export function serializeCardQuery(card?: Partial<CardQuery>): Uint8Array {
   }
 
   if (flags & OcgcoreCommonConstants.QUERY_POSITION) {
-    // QUERY_POSITION 在 ocgcore 中是完整 info_location（不是只有 position）
+    // QUERY_POSITION 在 ocgcore 中是完整 info_location
     const pdata =
-      source.positionData !== undefined
-        ? source.positionData >>> 0
-        : ((source.position || 0) << 24) >>> 0;
+      ((source.controller || 0) & 0xff) |
+      (((source.location || 0) & 0xff) << 8) |
+      (((source.sequence || 0) & 0xff) << 16) |
+      (((source.position || 0) & 0xff) << 24);
     view.setUint32(offset, pdata, true);
     offset += 4;
   }
@@ -386,26 +389,31 @@ export function serializeCardQuery(card?: Partial<CardQuery>): Uint8Array {
   }
 
   if (flags & OcgcoreCommonConstants.QUERY_REASON_CARD) {
-    view.setUint32(offset, (source.reasonCardData || 0) >>> 0, true);
+    const reasonCard = source.reasonCard || {
+      controller: 0,
+      location: 0,
+      sequence: 0,
+      position: 0,
+    };
+    view.setUint8(offset, reasonCard.controller);
+    view.setUint8(offset + 1, reasonCard.location);
+    view.setUint8(offset + 2, reasonCard.sequence);
+    view.setUint8(offset + 3, reasonCard.position || 0);
     offset += 4;
   }
 
   if (flags & OcgcoreCommonConstants.QUERY_EQUIP_CARD) {
-    if (source.equipCardData !== undefined) {
-      view.setUint32(offset, source.equipCardData >>> 0, true);
-      offset += 4;
-    } else {
-      const equipCard = source.equipCard || {
-        controller: 0,
-        location: 0,
-        sequence: 0,
-      };
-      view.setUint8(offset, equipCard.controller);
-      view.setUint8(offset + 1, equipCard.location);
-      view.setUint8(offset + 2, equipCard.sequence);
-      view.setUint8(offset + 3, 0);
-      offset += 4;
-    }
+    const equipCard = source.equipCard || {
+      controller: 0,
+      location: 0,
+      sequence: 0,
+      position: 0,
+    };
+    view.setUint8(offset, equipCard.controller);
+    view.setUint8(offset + 1, equipCard.location);
+    view.setUint8(offset + 2, equipCard.sequence);
+    view.setUint8(offset + 3, equipCard.position || 0);
+    offset += 4;
   }
 
   if (flags & OcgcoreCommonConstants.QUERY_TARGET_CARD) {
@@ -414,15 +422,10 @@ export function serializeCardQuery(card?: Partial<CardQuery>): Uint8Array {
     offset += 4;
     for (let i = 0; i < targets.length; i++) {
       const target = targets[i];
-      const rawTarget = source.targetCardData?.[i];
-      if (rawTarget !== undefined) {
-        view.setUint32(offset, rawTarget >>> 0, true);
-      } else {
-        view.setUint8(offset, target.controller);
-        view.setUint8(offset + 1, target.location);
-        view.setUint8(offset + 2, target.sequence);
-        view.setUint8(offset + 3, 0);
-      }
+      view.setUint8(offset, target.controller);
+      view.setUint8(offset + 1, target.location);
+      view.setUint8(offset + 2, target.sequence);
+      view.setUint8(offset + 3, target.position || 0);
       offset += 4;
     }
   }
@@ -573,4 +576,13 @@ export function createCodeHiddenCardQuery(
   card.empty = false;
   card.queryLength = inferCardQueryChunkLength(source);
   return card;
+}
+
+export function getCardQueryPosition(
+  card?: Partial<CardQuery>,
+): number | undefined {
+  if (!card) {
+    return undefined;
+  }
+  return typeof card.position === 'number' ? card.position : undefined;
 }
