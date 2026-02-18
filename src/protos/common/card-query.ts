@@ -16,6 +16,14 @@ export class CardQuery {
   empty?: boolean;
   // MSG_UPDATE_DATA 每个卡片块的原始总长度（包含 4 字节长度字段）
   queryLength?: number;
+  // QUERY_POSITION 的原始 32 位信息（controller/location/sequence/position）
+  positionData?: number;
+  // QUERY_REASON_CARD 的原始 32 位信息（info_location）
+  reasonCardData?: number;
+  // QUERY_EQUIP_CARD 的原始 32 位信息（info_location）
+  equipCardData?: number;
+  // QUERY_TARGET_CARD 各目标的原始 32 位信息（info_location）
+  targetCardData?: number[];
 
   // QUERY_CODE (1)
   code?: number;
@@ -106,7 +114,8 @@ export class CardQuery {
     }
 
     if (this.flags & OcgcoreCommonConstants.QUERY_POSITION) {
-      const pdata = view.getInt32(offset, true);
+      const pdata = view.getUint32(offset, true);
+      this.positionData = pdata;
       this.position = ((pdata >>> 24) & 0xff) >>> 0;
       offset += 4;
     }
@@ -167,11 +176,13 @@ export class CardQuery {
     }
 
     if (this.flags & OcgcoreCommonConstants.QUERY_REASON_CARD) {
-      // 跳过 4 字节
+      this.reasonCardData = view.getUint32(offset, true);
       offset += 4;
     }
 
     if (this.flags & OcgcoreCommonConstants.QUERY_EQUIP_CARD) {
+      const pdata = view.getUint32(offset, true);
+      this.equipCardData = pdata;
       this.equipCard = {
         controller: view.getUint8(offset),
         location: view.getUint8(offset + 1),
@@ -184,7 +195,9 @@ export class CardQuery {
       const count = view.getInt32(offset, true);
       offset += 4;
       this.targetCards = [];
+      this.targetCardData = [];
       for (let i = 0; i < count; i++) {
+        this.targetCardData.push(view.getUint32(offset, true));
         this.targetCards.push({
           controller: view.getUint8(offset),
           location: view.getUint8(offset + 1),
@@ -308,9 +321,12 @@ export function serializeCardQuery(card?: Partial<CardQuery>): Uint8Array {
   }
 
   if (flags & OcgcoreCommonConstants.QUERY_POSITION) {
-    // 位置编码在高字节
-    const pdata = ((source.position || 0) << 24) >>> 0;
-    view.setInt32(offset, pdata, true);
+    // QUERY_POSITION 在 ocgcore 中是完整 info_location（不是只有 position）
+    const pdata =
+      source.positionData !== undefined
+        ? source.positionData >>> 0
+        : ((source.position || 0) << 24) >>> 0;
+    view.setUint32(offset, pdata, true);
     offset += 4;
   }
 
@@ -370,33 +386,43 @@ export function serializeCardQuery(card?: Partial<CardQuery>): Uint8Array {
   }
 
   if (flags & OcgcoreCommonConstants.QUERY_REASON_CARD) {
-    // QUERY_REASON_CARD 写入 0
-    view.setInt32(offset, 0, true);
+    view.setUint32(offset, (source.reasonCardData || 0) >>> 0, true);
     offset += 4;
   }
 
   if (flags & OcgcoreCommonConstants.QUERY_EQUIP_CARD) {
-    const equipCard = source.equipCard || {
-      controller: 0,
-      location: 0,
-      sequence: 0,
-    };
-    view.setUint8(offset, equipCard.controller);
-    view.setUint8(offset + 1, equipCard.location);
-    view.setUint8(offset + 2, equipCard.sequence);
-    view.setUint8(offset + 3, 0);
-    offset += 4;
+    if (source.equipCardData !== undefined) {
+      view.setUint32(offset, source.equipCardData >>> 0, true);
+      offset += 4;
+    } else {
+      const equipCard = source.equipCard || {
+        controller: 0,
+        location: 0,
+        sequence: 0,
+      };
+      view.setUint8(offset, equipCard.controller);
+      view.setUint8(offset + 1, equipCard.location);
+      view.setUint8(offset + 2, equipCard.sequence);
+      view.setUint8(offset + 3, 0);
+      offset += 4;
+    }
   }
 
   if (flags & OcgcoreCommonConstants.QUERY_TARGET_CARD) {
     const targets = source.targetCards || [];
     view.setInt32(offset, targets.length, true);
     offset += 4;
-    for (const target of targets) {
-      view.setUint8(offset, target.controller);
-      view.setUint8(offset + 1, target.location);
-      view.setUint8(offset + 2, target.sequence);
-      view.setUint8(offset + 3, 0);
+    for (let i = 0; i < targets.length; i++) {
+      const target = targets[i];
+      const rawTarget = source.targetCardData?.[i];
+      if (rawTarget !== undefined) {
+        view.setUint32(offset, rawTarget >>> 0, true);
+      } else {
+        view.setUint8(offset, target.controller);
+        view.setUint8(offset + 1, target.location);
+        view.setUint8(offset + 2, target.sequence);
+        view.setUint8(offset + 3, 0);
+      }
       offset += 4;
     }
   }

@@ -40,3 +40,8 @@ lerna-debug.log*
 /ygopro-scripts
 /ygopro-core
 /cards.cdb
+
+.DS_Store
+._*
+/ygopro
+/tests/investigation*

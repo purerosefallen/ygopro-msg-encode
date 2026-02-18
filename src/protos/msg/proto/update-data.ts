@@ -1,6 +1,5 @@
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
 import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
-import { NetPlayerType } from '../../network-enums';
 import { YGOProMsgBase } from '../base';
 import {
   CardQuery,

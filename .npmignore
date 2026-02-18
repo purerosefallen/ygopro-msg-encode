@@ -15,3 +15,7 @@ Dockerfile
 /ygopro-scripts
 /ygopro-core
 /cards.cdb
+
+.DS_Store
+._*
+/ygopro
