@@ -44,4 +44,3 @@ lerna-debug.log*
 .DS_Store
 ._*
 /ygopro
-/tests/investigation*
