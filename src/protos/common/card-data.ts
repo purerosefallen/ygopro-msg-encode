@@ -2,33 +2,22 @@ import { BinaryField } from '../../binary/binary-meta';
 import { PayloadBase } from '../../proto-base/payload-base';
 import { OcgcoreCommonConstants } from '../../vendor/ocgcore-constants';
 
-// Constants from card_data.h
-const CARD_ARTWORK_VERSIONS_OFFSET = 20;
-const CARD_BLACK_LUSTER_SOLDIER2 = 5405695;
+// Double name cards (second_code keys from card_data.h)
+const SECOND_CODE_CARDS = new Set([
+  78734254, // CARD_MARINE_DOLPHIN
+  13857930, // CARD_TWINKLE_MOSS
+  1784686, // CARD_TIMAEUS
+  11082056, // CARD_CRITIAS
+  46232525, // CARD_HERMOS
+]);
 
-// Double name cards
-const CARD_MARINE_DOLPHIN = 78734254;
-const CARD_TWINKLE_MOSS = 13857930;
-
-// Helper functions
 function checkSetcode(setcode: number, value: number): boolean {
   const settype = value & 0x0fff;
   const setsubtype = value & 0xf000;
   return (
-    setcode &&
+    !!setcode &&
     (setcode & 0x0fff) === settype &&
     (setcode & setsubtype) === setsubtype
-  );
-}
-
-function isAlternative(code: number, alias: number): boolean {
-  if (code === CARD_BLACK_LUSTER_SOLDIER2) {
-    return false;
-  }
-  return (
-    alias &&
-    alias < code + CARD_ARTWORK_VERSIONS_OFFSET &&
-    code < alias + CARD_ARTWORK_VERSIONS_OFFSET
   );
 }
 
@@ -69,6 +58,9 @@ export class CardData extends PayloadBase {
   @BinaryField('u32', 72)
   linkMarker: number;
 
+  @BinaryField('u32', 76)
+  ruleCode: number;
+
   /**
    * Check if this card belongs to a specific setcode
    * @param value The setcode value to check against
@@ -86,12 +78,12 @@ export class CardData extends PayloadBase {
     return false;
   }
 
-  /**
-   * Get the original code of this card (handles alternate artworks)
-   * @returns The original card code
-   */
   getOriginalCode(): number {
-    return isAlternative(this.code, this.alias) ? this.alias : this.code;
+    return this.alias ? this.alias : this.code;
+  }
+
+  getDuelCode(): number {
+    return this.ruleCode ? this.ruleCode : this.getOriginalCode();
   }
 
   /**
@@ -100,6 +92,9 @@ export class CardData extends PayloadBase {
    * @returns true if the card can be declared
    */
   isDeclarable(opcode: number[]): boolean {
+    if (this.alias) {
+      return false;
+    }
     const stack: number[] = [];
 
     for (const it of opcode) {
@@ -132,7 +127,7 @@ export class CardData extends PayloadBase {
           if (stack.length >= 2) {
             const rhs = stack.pop()!;
             const lhs = stack.pop()!;
-            stack.push(Math.floor(lhs / rhs));
+            stack.push(rhs !== 0 ? Math.floor(lhs / rhs) : 0);
           }
           break;
         }
@@ -214,16 +209,12 @@ export class CardData extends PayloadBase {
       return false;
     }
 
-    // Additional checks from the original C++ code
-    return (
-      this.code === CARD_MARINE_DOLPHIN ||
-      this.code === CARD_TWINKLE_MOSS ||
-      (!this.alias &&
-        (this.type &
-          (OcgcoreCommonConstants.TYPE_MONSTER |
-            OcgcoreCommonConstants.TYPE_TOKEN)) !==
-          (OcgcoreCommonConstants.TYPE_MONSTER |
-            OcgcoreCommonConstants.TYPE_TOKEN))
-    );
+    if (
+      !SECOND_CODE_CARDS.has(this.code) &&
+      (this.ruleCode || this.type & OcgcoreCommonConstants.TYPE_TOKEN)
+    ) {
+      return false;
+    }
+    return true;
   }
 }
