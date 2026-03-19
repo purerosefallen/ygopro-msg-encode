@@ -1,7 +1,7 @@
 {
   "name": "ygopro-msg-encode",
   "description": "TS lib for encode / decode YGOPro proto",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -70,7 +70,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "typed-reflector": "^1.0.14",
+    "typed-reflector": "^1.1.2",
     "ygopro-deck-encode": "^1.0.15",
     "ygopro-yrp-encode": "^1.0.1"
   }

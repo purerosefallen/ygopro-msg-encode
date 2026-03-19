@@ -70,8 +70,8 @@ describe('CardData', () => {
       // Convert to binary
       const buffer = toBinaryFields(card);
 
-      // Verify buffer size (should be 76 bytes: CardData structure)
-      expect(buffer.length).toBe(76);
+      // Verify buffer size (should be 80 bytes: CardData structure + ruleCode)
+      expect(buffer.length).toBe(80);
 
       // Create a view to check the setcode area (offset 8, 16 u16 values = 32 bytes)
       const view = new DataView(
@@ -110,28 +110,28 @@ describe('CardData', () => {
       expect(card.getOriginalCode()).toBe(12345);
     });
 
-    it('should return alias when card is an alternative artwork', () => {
+    it('should return alias when alias is present', () => {
       const card = new CardData();
       card.code = 12345;
-      card.alias = 12340; // Within CARD_ARTWORK_VERSIONS_OFFSET (20)
+      card.alias = 12340;
 
       expect(card.getOriginalCode()).toBe(12340);
     });
 
-    it('should return code when difference is larger than offset', () => {
+    it('should still return alias when alias differs from code by a large amount', () => {
       const card = new CardData();
       card.code = 12345;
-      card.alias = 12300; // More than 20 apart
+      card.alias = 12300;
 
-      expect(card.getOriginalCode()).toBe(12345);
+      expect(card.getOriginalCode()).toBe(12300);
     });
 
-    it('should handle Black Luster Soldier special case', () => {
+    it('should return alias for legacy special-case values when alias is present', () => {
       const card = new CardData();
-      card.code = 5405695; // CARD_BLACK_LUSTER_SOLDIER2
-      card.alias = 5405690; // Within offset but should be ignored
+      card.code = 5405695;
+      card.alias = 5405690;
 
-      expect(card.getOriginalCode()).toBe(5405695); // Should return code, not alias
+      expect(card.getOriginalCode()).toBe(5405690);
     });
 
     it('should return code when alias is 0', () => {
@@ -140,6 +140,26 @@ describe('CardData', () => {
       card.alias = 0;
 
       expect(card.getOriginalCode()).toBe(12345);
+    });
+  });
+
+  describe('getDuelCode', () => {
+    it('should return original code when ruleCode is not present', () => {
+      const card = new CardData();
+      card.code = 12345;
+      card.alias = 12340;
+      card.ruleCode = 0;
+
+      expect(card.getDuelCode()).toBe(12340);
+    });
+
+    it('should return ruleCode when ruleCode is present', () => {
+      const card = new CardData();
+      card.code = 12345;
+      card.alias = 12340;
+      card.ruleCode = 90001;
+
+      expect(card.getDuelCode()).toBe(90001);
     });
   });
 
