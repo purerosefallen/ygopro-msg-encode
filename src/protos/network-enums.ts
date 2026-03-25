@@ -7,8 +7,8 @@
  * Hand result (rock-paper-scissors)
  */
 export enum HandResult {
-  ROCK = 1,
-  SCISSORS = 2,
+  SCISSORS = 1,
+  ROCK = 2,
   PAPER = 3,
 }
 
