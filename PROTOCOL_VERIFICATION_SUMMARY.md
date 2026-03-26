@@ -105,7 +105,7 @@ opcodes: number[];  // RPN expression for card declaration conditions
    ```typescript
    // 修复前
    @BinaryField('u16', 0, 20) name: number[];
-   
+
    // 修复后
    @BinaryField('utf16', 0, 20) name: string;
    ```
@@ -114,7 +114,7 @@ opcodes: number[];  // RPN expression for card declaration conditions
    ```typescript
    // 修复前
    @BinaryField('u16', 8, 20) pass: number[];
-   
+
    // 修复后
    @BinaryField('utf16', 8, 20) pass: string;
    ```
@@ -123,7 +123,7 @@ opcodes: number[];  // RPN expression for card declaration conditions
    ```typescript
    // 修复前
    @BinaryField('u16', 20, 20) name: number[];
-   
+
    // 修复后
    @BinaryField('utf16', 20, 20) name: string;
    ```
@@ -132,7 +132,7 @@ opcodes: number[];  // RPN expression for card declaration conditions
    ```typescript
    // 修复前
    @BinaryField('u16', 60, 20) pass: number[];
-   
+
    // 修复后
    @BinaryField('utf16', 60, 20) pass: string;
    ```
@@ -141,7 +141,7 @@ opcodes: number[];  // RPN expression for card declaration conditions
    ```typescript
    // 修复前
    @BinaryField('u16', 0, 20) name: number[];
-   
+
    // 修复后
    @BinaryField('utf16', 0, 20) name: string;
    ```
@@ -156,7 +156,7 @@ opcodes: number[];  // RPN expression for card declaration conditions
 
 1. **HandResult** - 猜拳结果
    ```typescript
-   enum HandResult { ROCK = 1, SCISSORS = 2, PAPER = 3 }
+   enum HandResult { SCISSORS = 1, ROCK = 2, PAPER = 3 }
    ```
    使用位置：`CTOS_HandResult.res`
 
@@ -405,6 +405,6 @@ handResult.res = HandResult.ROCK;
 
 ---
 
-**验证时间**: 2026-02-02  
-**参考源码**: YGOPro (ocgcore + gframe)  
+**验证时间**: 2026-02-02
+**参考源码**: YGOPro (ocgcore + gframe)
 **测试状态**: ✅ 101/101 通过
