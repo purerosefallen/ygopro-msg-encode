@@ -1,4 +1,9 @@
 import { OcgcoreCommonConstants } from '../../vendor/ocgcore-constants';
+import {
+  decodePublicRevealPosition,
+  encodePublicRevealPosition,
+  stripRevealFromPosition,
+} from './public-reveal-position';
 
 export class CardQuery_CardLocation {
   controller: number;
@@ -26,6 +31,7 @@ export class CardQuery {
   location?: number;
   sequence?: number;
   position?: number;
+  reveal?: boolean;
 
   // QUERY_ALIAS (4)
   alias?: number;
@@ -116,6 +122,7 @@ export class CardQuery {
       this.location = (pdata >>> 8) & 0xff;
       this.sequence = (pdata >>> 16) & 0xff;
       this.position = ((pdata >>> 24) & 0xff) >>> 0;
+      decodePublicRevealPosition(this);
       offset += 4;
     }
 
@@ -324,11 +331,15 @@ export function serializeCardQuery(card?: Partial<CardQuery>): Uint8Array {
 
   if (flags & OcgcoreCommonConstants.QUERY_POSITION) {
     // QUERY_POSITION 在 ocgcore 中是完整 info_location
+    const position = encodePublicRevealPosition(
+      source.position,
+      source.reveal,
+    );
     const pdata =
       ((source.controller || 0) & 0xff) |
       (((source.location || 0) & 0xff) << 8) |
       (((source.sequence || 0) & 0xff) << 16) |
-      (((source.position || 0) & 0xff) << 24);
+      ((position & 0xff) << 24);
     view.setUint32(offset, pdata, true);
     offset += 4;
   }
@@ -584,5 +595,7 @@ export function getCardQueryPosition(
   if (!card) {
     return undefined;
   }
-  return typeof card.position === 'number' ? card.position : undefined;
+  return typeof card.position === 'number'
+    ? stripRevealFromPosition(card.position)
+    : undefined;
 }

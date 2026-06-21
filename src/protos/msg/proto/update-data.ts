@@ -1,5 +1,6 @@
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
 import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
+import { NetPlayerType } from '../../network-enums';
 import { YGOProMsgBase } from '../base';
 import {
   CardQuery,
@@ -8,6 +9,10 @@ import {
   parseCardQueryChunk,
   serializeCardQueryChunk,
 } from '../../common/card-query';
+import {
+  sanitizePublicRevealPositionForView,
+  shouldHideFacedownCode,
+} from '../../common/public-reveal-position';
 
 // MSG_UPDATE_DATA 的结构：更新某个位置所有卡片的信息
 export class YGOProMsgUpdateData extends YGOProMsgBase {
@@ -35,7 +40,11 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
     if (this.location === OcgcoreScriptConstants.LOCATION_HAND) {
       return !position || !(position & OcgcoreCommonConstants.POS_FACEUP);
     }
-    return !!(position && position & OcgcoreCommonConstants.POS_FACEDOWN);
+    const reveal =
+      this.location & OcgcoreScriptConstants.LOCATION_ONFIELD
+        ? card.reveal
+        : undefined;
+    return shouldHideFacedownCode(position, reveal);
   }
 
   private shouldHideForTeammate(card: CardQuery): boolean {
@@ -64,6 +73,7 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
         if (this.shouldHideForOpponent(card)) {
           return createClearedCardQuery(card);
         }
+        sanitizePublicRevealPositionForView(card);
         return card;
       });
     }
@@ -77,10 +87,28 @@ export class YGOProMsgUpdateData extends YGOProMsgBase {
         if (this.shouldHideForTeammate(card)) {
           return createClearedCardQuery(card);
         }
+        sanitizePublicRevealPositionForView(card);
         return card;
       });
     }
     return copy;
+  }
+
+  playerView(playerId: number): this {
+    if (playerId === NetPlayerType.OBSERVER) {
+      return this.observerView();
+    }
+    if (this.player === playerId) {
+      const copy = this.copy();
+      if (copy.cards) {
+        copy.cards = copy.cards.map((card) => {
+          sanitizePublicRevealPositionForView(card);
+          return card;
+        });
+      }
+      return copy;
+    }
+    return this.opponentView();
   }
 
   fromPayload(data: Uint8Array): this {

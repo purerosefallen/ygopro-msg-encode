@@ -1,6 +1,12 @@
 import { BinaryField } from '../../../binary/binary-meta';
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
 import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
+import {
+  decodePublicRevealPosition,
+  encodePublicRevealPosition,
+  sanitizePublicRevealPositionForView,
+  shouldHideFacedownCode,
+} from '../../common/public-reveal-position';
 import { NetPlayerType } from '../../network-enums';
 import { YGOProMsgBase } from '../base';
 import { RequireQueryCardLocation } from '../query-location';
@@ -17,6 +23,8 @@ export class YGOProMsgMove_CardLocation {
 
   @BinaryField('u8', 3)
   position: number;
+
+  reveal?: boolean;
 }
 
 export class YGOProMsgMove extends YGOProMsgBase {
@@ -34,10 +42,33 @@ export class YGOProMsgMove extends YGOProMsgBase {
   @BinaryField('i32', 12)
   reason: number;
 
-  opponentView(): this {
+  fromPayload(data: Uint8Array): this {
+    super.fromPayload(data);
+    decodePublicRevealPosition(this.current);
+    return this;
+  }
+
+  toPayload(): Uint8Array {
+    const payload = this.copy();
+    payload.current.position = encodePublicRevealPosition(
+      payload.current.position,
+      payload.current.reveal,
+    );
+    delete payload.current.reveal;
+    return YGOProMsgBase.prototype.toPayload.call(payload);
+  }
+
+  private viewCopy(): this {
     const view = this.copy();
+    sanitizePublicRevealPositionForView(view.previous);
+    sanitizePublicRevealPositionForView(view.current);
+    return view;
+  }
+
+  opponentView(): this {
+    const view = this.viewCopy();
     const cl = view.current.location;
-    const cp = view.current.position;
+    const cp = this.current.position;
 
     // 移动到墓地或叠放不隐藏
     if (
@@ -53,7 +84,7 @@ export class YGOProMsgMove extends YGOProMsgBase {
       cl &
         (OcgcoreScriptConstants.LOCATION_DECK |
           OcgcoreScriptConstants.LOCATION_HAND) ||
-      cp & OcgcoreCommonConstants.POS_FACEDOWN
+      shouldHideFacedownCode(cp, this.current.reveal)
     ) {
       view.code = 0;
     }
@@ -72,7 +103,7 @@ export class YGOProMsgMove extends YGOProMsgBase {
       return this.observerView();
     }
     if (playerId === this.current.controller) {
-      return this.copy();
+      return this.viewCopy();
     }
     return this.opponentView();
   }

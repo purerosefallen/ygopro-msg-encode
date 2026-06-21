@@ -2,8 +2,14 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const COMMON_H = '/home/nanahira/ygo/ygopro/ocgcore/common.h';
-const SCRIPT_CONSTANT_LUA = '/home/nanahira/ygo/ygopro/script/constant.lua';
+const DEFAULT_YGOPRO_ROOT = path.resolve(ROOT, '../ygopro');
+const YGOPRO_ROOT = process.env.YGOPRO_PATH
+  ? path.resolve(process.env.YGOPRO_PATH)
+  : DEFAULT_YGOPRO_ROOT;
+const COMMON_H = path.join(YGOPRO_ROOT, 'ocgcore', 'common.h');
+const DEFAULT_COMMON_H = path.join(DEFAULT_YGOPRO_ROOT, 'ocgcore', 'common.h');
+const NETWORK_H = path.join(YGOPRO_ROOT, 'gframe', 'network.h');
+const SCRIPT_CONSTANT_LUA = path.join(YGOPRO_ROOT, 'script', 'constant.lua');
 const OUT_OCORE = path.join(ROOT, 'src', 'vendor', 'ocgcore-constants.ts');
 const OUT_SCRIPT = path.join(ROOT, 'src', 'vendor', 'script-constants.ts');
 
@@ -14,6 +20,10 @@ function readFileSafe(file) {
     console.error(`[gen-constants] Failed to read: ${file}`);
     throw err;
   }
+}
+
+function existingFiles(files) {
+  return Array.from(new Set(files)).filter((file) => fs.existsSync(file));
 }
 
 function parseNumber(raw) {
@@ -27,10 +37,11 @@ function sanitizeExpr(expr) {
   return expr
     .replace(/\/\/.*$/g, '')
     .replace(/\/\*.*?\*\//g, '')
-    .replace(/\bU\b/g, '')
-    .replace(/\bUL\b/g, '')
-    .replace(/\bULL\b/g, '')
-    .replace(/\bL\b/g, '')
+    .replace(/((?:0x[0-9a-f]+)|(?:\d+))(ull|ul|u|ll|l)\b/gi, '$1')
+    .replace(/\bU\b/gi, '')
+    .replace(/\bUL\b/gi, '')
+    .replace(/\bULL\b/gi, '')
+    .replace(/\bL\b/gi, '')
     .replace(/\s+/g, '');
 }
 
@@ -140,13 +151,14 @@ function writeFile(file, content) {
 }
 
 function main() {
-  const commonSource = readFileSafe(COMMON_H);
+  const commonSources = existingFiles([DEFAULT_COMMON_H, COMMON_H, NETWORK_H]);
+  const commonSource = commonSources.map((file) => readFileSafe(file)).join('\n');
   const luaSource = readFileSafe(SCRIPT_CONSTANT_LUA);
 
   const ocgcoreConstants = parseCDefines(commonSource);
   const scriptConstants = parseLuaConstants(luaSource);
 
-  writeFile(OUT_OCORE, emitConstantsTs('OcgcoreCommonConstants', ocgcoreConstants, COMMON_H));
+  writeFile(OUT_OCORE, emitConstantsTs('OcgcoreCommonConstants', ocgcoreConstants, commonSources.join(' + ')));
   writeFile(OUT_SCRIPT, emitConstantsTs('OcgcoreScriptConstants', scriptConstants, SCRIPT_CONSTANT_LUA));
 
   console.log(`[gen-constants] Wrote ${Object.keys(ocgcoreConstants).length} common.h constants`);

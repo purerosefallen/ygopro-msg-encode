@@ -53,6 +53,72 @@ describe('CardQuery', () => {
       expect(decoded.location).toBe(OcgcoreScriptConstants.LOCATION_MZONE);
       expect(decoded.sequence).toBe(5);
       expect(decoded.position).toBe(OcgcoreCommonConstants.POS_FACEUP_ATTACK);
+      expect(decoded.reveal).toBeUndefined();
+    });
+
+    it('should decode POS_REVEAL into reveal and strip it from position', () => {
+      const data = new Uint8Array(8);
+      const view = new DataView(data.buffer);
+      view.setInt32(0, OcgcoreCommonConstants.QUERY_POSITION, true);
+      view.setUint32(
+        4,
+        1 |
+          (OcgcoreScriptConstants.LOCATION_MZONE << 8) |
+          (2 << 16) |
+          ((
+            OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE |
+            OcgcoreCommonConstants.POS_REVEAL
+          ) <<
+            24),
+        true,
+      );
+
+      const decoded = new CardQuery();
+      decoded.fromPayload(data);
+
+      expect(decoded.controller).toBe(1);
+      expect(decoded.location).toBe(OcgcoreScriptConstants.LOCATION_MZONE);
+      expect(decoded.sequence).toBe(2);
+      expect(decoded.position).toBe(
+        OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+      );
+      expect(decoded.reveal).toBe(true);
+    });
+
+    it('should encode reveal true and leave false or undefined unrevealed', () => {
+      const makeCard = (reveal?: boolean) => {
+        const card = new CardQuery();
+        card.flags = OcgcoreCommonConstants.QUERY_POSITION;
+        card.controller = 0;
+        card.location = OcgcoreScriptConstants.LOCATION_MZONE;
+        card.sequence = 1;
+        card.position = OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE;
+        card.reveal = reveal;
+        return card;
+      };
+
+      const revealedData = makeCard(true).toPayload();
+      const revealedView = new DataView(
+        revealedData.buffer,
+        revealedData.byteOffset,
+        revealedData.byteLength,
+      );
+      expect((revealedView.getUint32(4, true) >>> 24) & 0xff).toBe(
+        OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE |
+          OcgcoreCommonConstants.POS_REVEAL,
+      );
+
+      for (const reveal of [false, undefined] as Array<boolean | undefined>) {
+        const data = makeCard(reveal).toPayload();
+        const dataView = new DataView(
+          data.buffer,
+          data.byteOffset,
+          data.byteLength,
+        );
+        expect((dataView.getUint32(4, true) >>> 24) & 0xff).toBe(
+          OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+        );
+      }
     });
 
     it('should handle empty card', () => {
@@ -381,6 +447,56 @@ describe('MSG_UPDATE_CARD', () => {
     expect(opponentView.card.code).toBe(0);
   });
 
+  it('should keep revealed facedown on-field card visible and clean reveal from views', () => {
+    const msg = new YGOProMsgUpdateCard();
+    msg.controller = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_MZONE;
+    msg.sequence = 0;
+
+    msg.card = new CardQuery();
+    msg.card.flags =
+      OcgcoreCommonConstants.QUERY_CODE |
+      OcgcoreCommonConstants.QUERY_POSITION |
+      OcgcoreCommonConstants.QUERY_ATTACK;
+    msg.card.code = 89631139;
+    msg.card.attack = 3000;
+    msg.card.controller = 0;
+    msg.card.location = OcgcoreScriptConstants.LOCATION_MZONE;
+    msg.card.sequence = 0;
+    msg.card.position = OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE;
+    msg.card.reveal = true;
+
+    const opponentView = msg.opponentView();
+    expect(opponentView.card.code).toBe(89631139);
+    expect(opponentView.card.position).toBe(
+      OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+    );
+    expect(opponentView.card.reveal).toBeUndefined();
+
+    const selfView = msg.playerView(0);
+    expect(selfView.card.code).toBe(89631139);
+    expect(selfView.card.reveal).toBeUndefined();
+  });
+
+  it('should ignore reveal outside on-field UPDATE_CARD visibility', () => {
+    const msg = new YGOProMsgUpdateCard();
+    msg.controller = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_REMOVED;
+    msg.sequence = 0;
+
+    msg.card = new CardQuery();
+    msg.card.flags =
+      OcgcoreCommonConstants.QUERY_CODE |
+      OcgcoreCommonConstants.QUERY_POSITION;
+    msg.card.code = 12345;
+    msg.card.position = OcgcoreCommonConstants.POS_FACEDOWN;
+    msg.card.reveal = true;
+
+    const opponentView = msg.opponentView();
+    expect(opponentView.card.flags).toBe(OcgcoreCommonConstants.QUERY_CODE);
+    expect(opponentView.card.code).toBe(0);
+  });
+
   it('should not hide faceup card info in opponent view', () => {
     const msg = new YGOProMsgUpdateCard();
     msg.controller = 0;
@@ -676,6 +792,35 @@ describe('MSG_UPDATE_DATA', () => {
       OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
     );
     expect(teammateView.cards[0].defense).toBe(2000);
+  });
+
+  it('should keep revealed facedown UPDATE_DATA card visible and clean reveal from views', () => {
+    const msg = new YGOProMsgUpdateData();
+    msg.player = 0;
+    msg.location = OcgcoreScriptConstants.LOCATION_MZONE;
+    msg.cards = [];
+
+    const card = new CardQuery();
+    card.flags =
+      OcgcoreCommonConstants.QUERY_CODE |
+      OcgcoreCommonConstants.QUERY_POSITION |
+      OcgcoreCommonConstants.QUERY_DEFENSE;
+    card.code = 12345;
+    card.position = OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE;
+    card.reveal = true;
+    card.defense = 2000;
+    msg.cards.push(card);
+
+    const opponentView = msg.opponentView();
+    expect(opponentView.cards[0].code).toBe(12345);
+    expect(opponentView.cards[0].position).toBe(
+      OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+    );
+    expect(opponentView.cards[0].reveal).toBeUndefined();
+
+    const selfView = msg.playerView(0);
+    expect(selfView.cards[0].code).toBe(12345);
+    expect(selfView.cards[0].reveal).toBeUndefined();
   });
 
   it('should hide non-public hand cards from teammate', () => {

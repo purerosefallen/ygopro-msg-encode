@@ -22,6 +22,7 @@ import {
   YGOProMsgSelectUnselectCard,
   YGOProMsgConfirmDeckTop,
   YGOProMsgMove,
+  YGOProMsgSpSummoning,
   YGOProMsgSwap,
 } from '../src/protos/msg/proto';
 import { YGOProMessages } from '../src/protos/msg/registry';
@@ -263,6 +264,117 @@ describe('YGOPro MSG Serialization', () => {
 
       const teammateView = msg.teammateView();
       expect(teammateView.code).toBe(0);
+    });
+
+    it('should decode and encode POS_REVEAL on MOVE current position', () => {
+      const msg = new YGOProMsgMove();
+      msg.code = 998877;
+      msg.previous = { controller: 0, location: 2, sequence: 0, position: 0 };
+      msg.current = {
+        controller: 0,
+        location: OcgcoreScriptConstants.LOCATION_MZONE,
+        sequence: 0,
+        position: OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+        reveal: true,
+      };
+      msg.reason = 0;
+
+      const data = msg.toPayload();
+      expect(data[12]).toBe(
+        OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE |
+          OcgcoreCommonConstants.POS_REVEAL,
+      );
+
+      const decoded = new YGOProMsgMove();
+      decoded.fromPayload(data);
+      expect(decoded.current.position).toBe(
+        OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+      );
+      expect(decoded.current.reveal).toBe(true);
+    });
+
+    it('should keep revealed MOVE code visible and clean reveal from views', () => {
+      const msg = new YGOProMsgMove();
+      msg.code = 998877;
+      msg.previous = { controller: 0, location: 2, sequence: 0, position: 0 };
+      msg.current = {
+        controller: 0,
+        location: OcgcoreScriptConstants.LOCATION_MZONE,
+        sequence: 0,
+        position: OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+        reveal: true,
+      };
+      msg.reason = 0;
+
+      const opponentView = msg.opponentView();
+      expect(opponentView.code).toBe(998877);
+      expect(opponentView.current.position).toBe(
+        OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+      );
+      expect(opponentView.current.reveal).toBeUndefined();
+
+      const selfView = msg.playerView(0);
+      expect(selfView.code).toBe(998877);
+      expect(selfView.current.reveal).toBeUndefined();
+    });
+
+    it('should still hide MOVE code to hand even when reveal is true', () => {
+      const msg = new YGOProMsgMove();
+      msg.code = 998877;
+      msg.previous = { controller: 0, location: 4, sequence: 0, position: 0 };
+      msg.current = {
+        controller: 0,
+        location: OcgcoreScriptConstants.LOCATION_HAND,
+        sequence: 0,
+        position: OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+        reveal: true,
+      };
+      msg.reason = 0;
+
+      const opponentView = msg.opponentView();
+      expect(opponentView.code).toBe(0);
+      expect(opponentView.current.reveal).toBeUndefined();
+    });
+
+    it('should serialize and deserialize MSG_SPSUMMONING with reveal', () => {
+      const msg = new YGOProMsgSpSummoning();
+      msg.code = 112233;
+      msg.controller = 0;
+      msg.location = OcgcoreScriptConstants.LOCATION_MZONE;
+      msg.sequence = 0;
+      msg.position = OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE;
+      msg.reveal = true;
+
+      const data = msg.toPayload();
+      expect(data[8]).toBe(
+        OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE |
+          OcgcoreCommonConstants.POS_REVEAL,
+      );
+
+      const decoded = new YGOProMsgSpSummoning();
+      decoded.fromPayload(data);
+      expect(decoded.position).toBe(
+        OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE,
+      );
+      expect(decoded.reveal).toBe(true);
+
+      const opponentView = decoded.opponentView();
+      expect(opponentView.code).toBe(112233);
+      expect(opponentView.reveal).toBeUndefined();
+    });
+
+    it('should hide unrevealed facedown MSG_SPSUMMONING code', () => {
+      const msg = new YGOProMsgSpSummoning();
+      msg.code = 112233;
+      msg.controller = 0;
+      msg.location = OcgcoreScriptConstants.LOCATION_MZONE;
+      msg.sequence = 0;
+      msg.position = OcgcoreCommonConstants.POS_FACEDOWN_DEFENSE;
+      msg.reveal = false;
+
+      const opponentView = msg.opponentView();
+      expect(opponentView.code).toBe(0);
+      expect(opponentView.reveal).toBeUndefined();
     });
 
     it('should serialize and deserialize MSG_EQUIP', () => {

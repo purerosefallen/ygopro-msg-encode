@@ -1,4 +1,5 @@
 import { OcgcoreCommonConstants } from '../../../vendor/ocgcore-constants';
+import { OcgcoreScriptConstants } from '../../../vendor/script-constants';
 import { NetPlayerType } from '../../network-enums';
 import { YGOProMsgBase } from '../base';
 import {
@@ -8,6 +9,10 @@ import {
   parseCardQueryChunk,
   serializeCardQueryChunk,
 } from '../../common/card-query';
+import {
+  sanitizePublicRevealPositionForView,
+  shouldHideFacedownCode,
+} from '../../common/public-reveal-position';
 import { RequireQueryCardLocation } from '../query-location';
 
 // MSG_UPDATE_CARD 的结构：更新单张卡片的信息
@@ -19,12 +24,25 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
   sequence: number;
   card: CardQuery;
 
+  private isOnFieldLocation(): boolean {
+    return !!(this.location & OcgcoreScriptConstants.LOCATION_ONFIELD);
+  }
+
+  private viewCopy(): this {
+    const copy = this.copy();
+    sanitizePublicRevealPositionForView(copy.card);
+    return copy;
+  }
+
   opponentView(): this {
     const copy = this.copy();
     const position = getCardQueryPosition(copy.card);
+    const reveal = this.isOnFieldLocation() ? copy.card?.reveal : undefined;
     // 如果卡片是盖放的，清除查询数据（只保留 flags = QUERY_CODE，code = 0）
-    if (position && position & OcgcoreCommonConstants.POS_FACEDOWN) {
+    if (shouldHideFacedownCode(position, reveal)) {
       copy.card = createCodeHiddenCardQuery(copy.card);
+    } else {
+      sanitizePublicRevealPositionForView(copy.card);
     }
     return copy;
   }
@@ -32,7 +50,7 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
   teammateView(): this {
     // TAG 决斗中，RefreshSingle 总是先把完整 UPDATE_CARD 发给同队玩家
     // （包括场上背面、手牌/卡组等非公开区域）
-    return this.copy();
+    return this.viewCopy();
   }
 
   playerView(playerId: number): this {
@@ -42,7 +60,7 @@ export class YGOProMsgUpdateCard extends YGOProMsgBase {
       return this.observerView();
     }
     if (this.controller === playerId) {
-      return this.copy();
+      return this.viewCopy();
     }
     return this.opponentView();
   }
