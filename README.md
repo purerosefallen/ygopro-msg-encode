@@ -89,6 +89,50 @@ if (parsed instanceof YGOProMsgHint) {
 }
 ```
 
+### Angelus WebSocket messages
+
+Version 1.4.0 adds two registries for the binary `ygoangelus.v1` subprotocol. Angelus decodes incoming requests with `YGOProAngelusCtos`. Callers such as srvpro2 and the replay archiver decode incoming replies, errors and core messages with `YGOProAngelusStoc`. Their packets extend `YGOProAngelusCtosBase` and `YGOProAngelusStocBase` respectively, both derived from `YGOProAngelusBase`.
+
+Pass one reassembled WebSocket message to the receiver's registry. The five-byte header contains the opcode and a little-endian u32 request ID. Requests and replies share the same ID. Unsolicited core messages use ID zero. The caller manages the socket and assigns request IDs.
+
+```ts
+import {
+  YGOProAngelusCtos, YGOProAngelusStoc, YGOProAngelusStart, YGOProAngelusProcessResult,
+} from 'ygopro-msg-encode';
+
+const start = new YGOProAngelusStart();
+start.requestId = 1;
+start.seed = [1, 2, 3, 4, 5, 6, 7, 8];
+start.duelRule = 5;
+start.startLp = 8000;
+start.startHand = 5;
+start.drawCount = 1;
+start.decks = [[101, 202, 101], [303]];
+start.setRegistry({ duel_mode: 'single' });
+const packet = YGOProAngelusCtos.getInstanceFromPayload(start.toFullPayload());
+if (packet instanceof YGOProAngelusStart) {
+  const dump = packet.registry;            // Native dump bytes
+  const entries = packet.decodeRegistry(); // Strings on demand
+}
+
+const result = new YGOProAngelusProcessResult();
+result.requestId = 2;
+result.fromOcgcorePayload(Uint8Array.of(0x28, 0, 0x29, 4, 0));
+const reply = YGOProAngelusStoc.getInstanceFromPayload(result.toFullPayload());
+if (reply instanceof YGOProAngelusProcessResult) {
+  const slices = reply.messages;           // One Uint8Array per MSG
+  const messages = reply.decodeMessages(); // Existing YGOProMsgBase instances
+}
+```
+
+Use `toPayload()` and `fromPayload()` for bodies and `toFullPayload()` and `fromFullPayload()` for complete messages. Each registry returns `undefined` for opcodes outside its direction's registration table. Malformed known packets throw. Queries return raw buffers except for the scalar field count.
+
+For `YGOProDeck[]` input, use `start.setDecks(decks)` for live games or `start.setReplayDecks(decks)` for YRP playback. Both collect the main and extra zones and omit side cards. The replay helper reverses each zone independently. Both preserve seat order and leave the input decks intact.
+
+Each PROCESS_RESULT represents one native process call. Its status is the first control message in order (1 for a response prompt, 2 for WIN, 3 for RETRY), or 0. Each MSG has a u16 byte length, including its identifier. START keeps deck codes in the supplied order. Its registry tail and the complete FINISH_OK body use the native repeated `[u16 key length][u16 value length][key bytes][value bytes]` layout.
+
+The server-generated `MSG_UPDATE_DATA` consumes its enclosing message. Use an explicitly framed entry in `messages` when forwarding one. `fromOcgcorePayload()` rejects it in unframed native batches where its end is ambiguous.
+
 ## Protocol Format
 
 ### CTOS/STOC Packet Structure
