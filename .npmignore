@@ -20,3 +20,4 @@ Dockerfile
 ._*
 /ygopro
 /*.md
+/scripts
