@@ -35,6 +35,17 @@ interface FieldInfo {
   info: BinaryFieldInfo;
 }
 
+const validateEnum = (
+  key: string,
+  info: BinaryFieldInfo,
+  value: string | number,
+) => {
+  if (info.enumValues && !info.enumValues.has(value)) {
+    throw new Error(`Invalid enum value for binary field ${key}: ${value}`);
+  }
+  return value;
+};
+
 const getFieldInfos = (objOrClass: any) => {
   const fields = reflector
     .getArray('binaryFieldKeys', objOrClass)
@@ -172,7 +183,11 @@ export const fillBinaryFields = <T = any>(
       // utf8: length 表示字节长度
       const lengthValue = resolveLength(obj, info.length!, key);
       const byteLength = type === 'utf16' ? lengthValue * 2 : lengthValue;
-      (obj as any)[key] = readString(type, offset, byteLength);
+      (obj as any)[key] = validateEnum(
+        key,
+        info,
+        readString(type, offset, byteLength),
+      );
       totalSize = Math.max(totalSize, offset + byteLength);
       return;
     }
@@ -185,13 +200,15 @@ export const fillBinaryFields = <T = any>(
       const length = resolveLength(obj, info.length, key);
       const array = [];
       for (let i = 0; i < length; i++) {
-        array.push(readValue(typeStr, offset + i * typeSize));
+        array.push(
+          validateEnum(key, info, readValue(typeStr, offset + i * typeSize)),
+        );
       }
       (obj as any)[key] = array;
       totalSize = Math.max(totalSize, offset + length * typeSize);
     } else {
       // 单个值
-      (obj as any)[key] = readValue(typeStr, offset);
+      (obj as any)[key] = validateEnum(key, info, readValue(typeStr, offset));
       totalSize = Math.max(totalSize, offset + typeSize);
     }
   };
@@ -315,7 +332,7 @@ export const toBinaryFields = <T = any>(
     const type = info.type;
     const value = (obj as any)[key];
 
-    if (value === undefined || value === null) {
+    if (value == null && !info.enumValues) {
       return; // 跳过未定义的字段
     }
 
@@ -354,7 +371,10 @@ export const toBinaryFields = <T = any>(
       // utf8: length 表示字节长度
       const lengthValue = resolveLength(obj, info.length!, key);
       const byteLength = type === 'utf16' ? lengthValue * 2 : lengthValue;
-      writeString(type, offset, byteLength, value);
+      validateEnum(key, info, value ?? '');
+      if (value != null) {
+        writeString(type, offset, byteLength, value);
+      }
       return;
     }
 
@@ -366,19 +386,19 @@ export const toBinaryFields = <T = any>(
       const length = resolveLength(obj, info.length, key);
       // 确保遍历完整的 length，如果数组元素不够，剩余部分会保持为 0（zero fill）
       for (let i = 0; i < length; i++) {
-        if (
-          value &&
-          i < value.length &&
-          value[i] !== undefined &&
-          value[i] !== null
-        ) {
-          writeValue(typeStr, offset + i * typeSize, value[i]);
+        const item = value && i < value.length ? value[i] : undefined;
+        validateEnum(key, info, item ?? 0);
+        if (item != null) {
+          writeValue(typeStr, offset + i * typeSize, item);
         }
         // 如果 value 不存在、索引超出范围或值为 undefined/null，则保持为 0（已由 Uint8Array 初始化）
       }
     } else {
       // 单个值
-      writeValue(typeStr, offset, value);
+      validateEnum(key, info, value ?? 0);
+      if (value != null) {
+        writeValue(typeStr, offset, value);
+      }
     }
   };
 

@@ -5,6 +5,6 @@ import { TurnPlayerResult } from '../../network-enums';
 export class YGOProCtosTpResult extends YGOProCtosBase {
   static identifier = 0x4;
 
-  @BinaryField('u8', 0)
+  @BinaryField('u8', 0, undefined, { enum: TurnPlayerResult })
   res: TurnPlayerResult;
 }

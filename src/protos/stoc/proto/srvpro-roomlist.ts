@@ -8,7 +8,7 @@ export class SrvproRoomInfo {
   @BinaryField('utf8', 0, 64)
   roomname: string;
 
-  @BinaryField('u8', 64)
+  @BinaryField('u8', 64, undefined, { enum: RoomStatus })
   room_status: RoomStatus;
 
   @BinaryField('i8', 65)

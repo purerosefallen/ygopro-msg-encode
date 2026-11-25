@@ -5,6 +5,51 @@ import {
 } from '../src/binary/fill-binary-fields';
 
 describe('Binary Serialization', () => {
+  describe('enum fields', () => {
+    enum Choice {
+      NONE = 0,
+      SELECTED = 2,
+    }
+
+    class Choices {
+      @BinaryField('u8', 0, 3, { enum: Choice })
+      values: Choice[];
+    }
+
+    it('validates each array value and preserves valid zero fill', () => {
+      const choices = Object.assign(new Choices(), {
+        values: [Choice.SELECTED],
+      });
+      const payload = toBinaryFields(choices);
+      const decoded = new Choices();
+      fillBinaryFields(decoded, payload);
+      expect(decoded.values).toEqual([
+        Choice.SELECTED,
+        Choice.NONE,
+        Choice.NONE,
+      ]);
+
+      const invalid = Object.assign(new Choices(), {
+        values: [Choice.NONE, 1],
+      });
+      expect(() => toBinaryFields(invalid)).toThrow(
+        /invalid enum value.*values/i,
+      );
+      expect(() => fillBinaryFields(decoded, Uint8Array.of(0, 1, 0))).toThrow(
+        /invalid enum value.*values/i,
+      );
+    });
+
+    it('rejects reverse-mapped names and values that would truncate to a member', () => {
+      for (const value of ['SELECTED', 258]) {
+        const choices = Object.assign(new Choices(), { values: [value] });
+        expect(() => toBinaryFields(choices)).toThrow(
+          /invalid enum value.*values/i,
+        );
+      }
+    });
+  });
+
   describe('Basic numeric types', () => {
     class NumericTypes {
       @BinaryField('u8', 0)

@@ -5,6 +5,6 @@ import { NetPlayerType } from '../../network-enums';
 export class YGOProCtosKick extends YGOProCtosBase {
   static identifier = 0x24;
 
-  @BinaryField('u8', 0)
+  @BinaryField('u8', 0, undefined, { enum: NetPlayerType })
   pos: NetPlayerType;
 }

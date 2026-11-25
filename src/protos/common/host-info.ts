@@ -10,7 +10,7 @@ export class HostInfo {
   @BinaryField('u8', 4)
   rule: number; // Rule index (0-5), maps to OT values in UI
 
-  @BinaryField('u8', 5)
+  @BinaryField('u8', 5, undefined, { enum: GameMode })
   mode: GameMode;
 
   @BinaryField('u8', 6)

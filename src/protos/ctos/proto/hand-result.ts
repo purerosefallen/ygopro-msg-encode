@@ -5,6 +5,6 @@ import { HandResult } from '../../network-enums';
 export class YGOProCtosHandResult extends YGOProCtosBase {
   static identifier = 0x3;
 
-  @BinaryField('u8', 0)
+  @BinaryField('u8', 0, undefined, { enum: HandResult })
   res: HandResult;
 }
